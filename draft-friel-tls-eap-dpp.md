@@ -51,7 +51,9 @@ There are on-boarding protocols, such as [DPP], to address this use case but the
 
 The mechanism for on-boarding of devices defined in this document relies on bootstrap key pairs. A client device has an associated elliptic curve (EC) key pair. The key pair may be static and baked into device firmware at manufacturing time, or may be dynamic and generated at on-boarding time by the device.
 
-The public key of the device is known to the TLS server. The exact mechanism by which the server gains knowledge of the public key is out of scope of this specification, but possible mechanisms include scanning of a QR code or upload of a Bill of Materials (BOM).
+The public key of the device is known to the TLS server. More specifically, the ASN.1 SEQUENCE SubjectPublicKeyInfo from {{?RFC5280}} is known to the server, which means that the associated AlgorithmIdentifier and EC curve is known to the server.
+
+The exact mechanism by which the server gains knowledge of the public key is out of scope of this specification, but possible mechanisms include scanning of a QR code or upload of a Bill of Materials (BOM).
 
 Using the extensions defined herein, the server proves to the client that it has knowledge of the client's bootstrap public key. Similarly, the client proves to the server that it has knowledge of the associated private key. This gives a guarantee to the client that it is connecting to a server that knows its bootstrap public key. Similarly, this gives a guarantee to the server that the connecting client owns the key pair.
 
@@ -71,11 +73,29 @@ There are two options for generation of the server's ephemeral key.
 
 This document assumes the latter and that the server generates unique ephemeral key pairs for bootstrap and key_share.
 
+## Bootstrapping Key Naming
+
+The bootstrapping key of the client is specified using the bskey extension.  The "extension data" field of this extension SHALL consist of the base64 encoded SHA256 digest of the DER-encoded ASN.1 subjectPublicKeyInfo representation of the bootstrapping public key. The extension is:
+
+      opaque bskey[32];
+
+The bskey is a 32 byte string.  The ExtensionType of bskey is TBD.
+
+## Bootstrap Key Extension
+
+      struct {
+          opaque bskey[32];
+      } BootstrapKey;
+
+The bootstrapping key of the client is specified using the BootstrapKey extension.  The 'bskey' field of this extension SHALL consist of the base64 encoded SHA256 digest of the DER-encoded ASN.1 subjectPublicKeyInfo representation of the bootstrapping public key.
+
 ##  Changes to TLS 1.3 Handshake
 
-The bootstrapping key is identified in the ClientHello using the "bskey" extension.  The contents of this extension are a SHA256 hash of a DER-encoded ASN.1 represention of the subjectPublicKeyInfo of device's public key.  The bskey extension is defined in Section 2.2.
+The client identifies the bootstrapping key in the ClientHello using the BootstrapKey extension. The server looks up the client's bootstrapping key in its database by checking the SHA256 hash of each entry with the value received in the ClientHello.  If no match is found, the server SHOULD respond with an unknown_bskey error alert.
 
-The server looks up the client's bootstrapping key in its database by checking the SHA256 hash of each entry with the value received in the ClientHello.  If no match is found, the server SHOULD respond with a HelloRetryRequest indicating a desired "key_share" extension.  A client that has sent a ClientHello with the "bskey" extension that receives a HelloRetryRequest SHALL assume the server does not have its bootstrapping key.  It MAY decide to continue with another TLS ciphersuite.
+If the server found the matching bootstrap key, the server generates an ephemeral ECDH keypair on the curve indicated in the bootstrap public key information, and performs an ECDH operation using the client bootstrap key and the server's ephemeral keypair. The server echos the BootstrapKey extension back to the client in the ServerHello to explicitly confirm to the client that it has performed an ECDH using the bootstrap key, and has injected the output into the key schedule.
+
+This is in addition to, and independent from, the (EC)DH that the server carries out when handling the key_share extension.
 
 The handshake is shown in Figure 1.
 
@@ -83,9 +103,11 @@ The handshake is shown in Figure 1.
 
          Client                                            Server
          --------                                          --------
-         ClientHello (bskey)
+         ClientHello
+         + bskey
          + key_share                -------->
                                                         ServerHello
+                                                        + bskey
                                                         + key_share
                                               {EncryptedExtensions}
                                                          {Finished}
@@ -97,7 +119,11 @@ The handshake is shown in Figure 1.
 
                     Figure 1: TLS 1.3 TLS-PWD Handshake
 
-The server looks up the client's bootstrapping key based upon the received bskey extension.  The server generates an ephemeral ECDH keypair and performes two ECDH operations with it, one using the client's bootstrapping public key and another using the client's ECDH public key from the keyshare extension.  The x-coordinate of the two ECDH shared secret points are concatenated, bootstrapping key first, ephemeral key second, to create a concatenated shared secret for the TLS 1.3 key schedule.
+## Changes to TLS 1.3 Key Schedule
+
+[[ TODO: need to fixup this, what if the key_share is finite field? ]]
+
+The x-coordinate of the two ECDH shared secret points are concatenated, bootstrapping key first, ephemeral key second, to create a concatenated shared secret for the TLS 1.3 key schedule. 
 
 The key schedule for bootstrapping TLS is as follows.
 
@@ -132,14 +158,6 @@ The key schedule for bootstrapping TLS is as follows.
                                        +-----> Derive-Secret(...)
 ~~~
 
-
-## Bootstrapping Key Naming
-
-The bootstrapping key of the client is specified using the bskey extension.  The "extension data" field of this extension SHALL consist of the base64 encoded SHA256 digest of the DER-encoded ASN.1 subjectPublicKeyInfo representation of the bootstrapping public key. The extension is:
-
-      opaque bskey[32];
-
-The bskey is a 32 byte string.  The ExtensionType of bskey is TBD.
 
 # Using TLS Bootstrapping in EAP
 

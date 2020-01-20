@@ -45,7 +45,7 @@ and network connectivity is needed to obtain a credential.  This poses a catch-2
 
 If trust in the integrity of a device's public key can be obtained in an out-of-band fashion, a device can be authenticated and provisioned with a usable credential for network access.  While this authentication can be strong, the device's authentication of the network is somewhat weaker.  [Stajano]] presents a functional security model to address this asymmetry.
 
-There are on-boarding protocols, such as [DPP], to address this use case but these do not address large-scale, enterprise deployments that require an X.509 certificate for network access.  This document describes such a protocol.
+There are on-boarding protocols, such as [DPP], to address this use case but these do not address large-scale, enterprise deployments that require an X.509 certificate for network access.  This document describes such a protocol, which we refer to as TLS Proof of Knowledge or TLS-POK.
 
 ## Bootstrap Key Pair
 
@@ -121,11 +121,13 @@ The handshake is shown in Figure 1.
 
 ## Changes to TLS 1.3 Key Schedule
 
-[[ TODO: need to fixup this, what if the key_share is finite field? ]]
+[[ TODO: The key schedule mechanism needs to closed. ]]
 
-The x-coordinate of the two ECDH shared secret points are concatenated, bootstrapping key first, ephemeral key second, to create a concatenated shared secret for the TLS 1.3 key schedule. 
+Multiple options for modifying the TLS 1.3 key schedule have been proporsed recently including {{?I-D.stebila-tls-hybrid-design}} and {{?I-D.jhoyla-tls-extended-key-schedule}}. The key schedule used for TLS-POK will align with the final direction chosen by the TLS WG.
 
-The key schedule for bootstrapping TLS is as follows.
+This document proposes aligning with the model outlined in {{?I-D.jhoyla-tls-extended-key-schedule}} where the shared secrets derived fomr the bskey and key_share key exchanges are injected in sequence into the key schedule.
+
+The key schedule for TLS-POK is as follows:
 
 ~~~
                                        0
@@ -141,7 +143,13 @@ The key schedule for bootstrapping TLS is as follows.
                                  Derive-Secret(., "derived", "")
                                        |
                                        v
-   concatenated_shared_secret -> HKDF-Extract = Handshake Secret
+                        bskey_input -> HKDF-Extract
+                                       |
+                                       v
+                                 Derive-Secret(., "derived", "")
+                                       |
+                                       v
+                (EC)DHE -> HKDF-Extract = Handshake Secret
                                        |
                                        +-----> Derive-Secret(...)
                                        +-----> Derive-Secret(...)
@@ -161,7 +169,7 @@ The key schedule for bootstrapping TLS is as follows.
 
 # Using TLS Bootstrapping in EAP
 
-Enterprise deployments typically require an 802.1x/EAP-based authentication to obtain network access.  Devices whose boostrapping key has been obtained in an out-of-band fashion can perform an EAP-TLS-based exchange, for instance {{?RFC7170}}, and authenticate the TLS exchange using the bootstrapping extensions defined in Section 2.
+Enterprise deployments typically require an 802.1X/EAP-based authentication to obtain network access.  Devices whose boostrapping key has been obtained in an out-of-band fashion can perform an EAP-TLS-based exchange, for instance {{?RFC7170}}, and authenticate the TLS exchange using the bootstrapping extensions defined in {{using-bootstrapping-in-tls-1.3}}.
 
 # IANA Considerations
 
@@ -169,6 +177,6 @@ IANA will allocated an ExtensionType for the bskey extension from the appropriat
 
 # Security Considerations 
 
-[[TODO]]
+Bootstrap and trust establishment is based on proof of knowledge of the client's bootstrap public key. The bootstrap public key may be included in a BOM or printed on a QR code label on the client. If an adversary has knowledge of the bootstrap public key, the adversady may be able to make the client bootstrap against the adversasy's network. For example, if an adversary intercepts and scans QR labels on clients, and the adversary can force the client to connect to its server, then the adversary can complete the TLS-POK handshake with the client and the client will connect to the adversary's server.
 
 

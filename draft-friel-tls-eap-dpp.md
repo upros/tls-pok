@@ -33,7 +33,7 @@ informative:
 
 --- abstract
 
-This document defines a TLS extension that enables a server to prove to a client that it has knowledge of the public key of a key pair where the client has knowledge of the private key of the key pair. Unlike standard TLS key exchanges, the public key pair is never exchanged in TLS protocol messages. Proof of knowledge of the public key is used by the client to bootstrap trust in the server, and the primary use case is to establish trust in an EAP server.
+This document defines a TLS extension that enables a server to prove to a client that it has knowledge of the public key of a key pair where the client has knowledge of the private key of the key pair. Unlike standard TLS key exchanges, the public key is never exchanged in TLS protocol messages. Proof of knowledge of the public key is used by the client to bootstrap trust in the server, and the primary use case is to establish trust in an EAP server.
 
 --- middle
 
@@ -72,14 +72,6 @@ There are two options for generation of the server's ephemeral key.
 - server generates two ephemeral key pairs: one that is used for the static-ephemeral (bootstrap) ECDH exchange, and one that is used for the ephemeral-ephemeral (TLS key_share) DH exchange. The bootstrap and key_share keys are independent. The key_share keys may be Finite Field DH keys.
 
 This document assumes the latter and that the server generates unique ephemeral key pairs for bootstrap and key_share.
-
-## Bootstrapping Key Naming
-
-The bootstrapping key of the client is specified using the bskey extension.  The "extension data" field of this extension SHALL consist of the base64 encoded SHA256 digest of the DER-encoded ASN.1 subjectPublicKeyInfo representation of the bootstrapping public key. The extension is:
-
-      opaque bskey[32];
-
-The bskey is a 32 byte string.  The ExtensionType of bskey is TBD.
 
 ## Bootstrap Key Extension
 

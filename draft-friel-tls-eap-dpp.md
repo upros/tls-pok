@@ -167,11 +167,15 @@ Enterprise deployments typically require an 802.1X/EAP-based authentication to o
 
 # Summary of Work
 
+[TODO: agree with WG chairs where this work lives and where it should be documented.]
+
 The protocol outlined here can be broadly broken up into 3 distinct areas:
 
 - TLS extensions to transport the bootstrap public key identifier
 - TLS key schedule enhancements to inject bootstrap public key keying material
 - TEAP extensions to leverage the new TLS-POK handshake for trust establishment
+
+This document captures all 3 areas, but it may be more apropriate to split the work into multiple documents, piggy back on top of {{?I-D.jhoyla-tls-extended-key-schedule}}, etc.
 
 # IANA Considerations
 

@@ -175,7 +175,10 @@ The protocol outlined here can be broadly broken up into 3 distinct areas:
 - TLS key schedule enhancements to inject bootstrap public key keying material
 - TEAP extensions to leverage the new TLS-POK handshake for trust establishment
 
-This document captures all 3 areas, but it may be more apropriate to split the work into multiple documents, piggy back on top of {{?I-D.jhoyla-tls-extended-key-schedule}}, etc.
+This document captures all 3 areas, but it may be more appropriate to split the work into multiple documents e.g.:
+
+- piggy back on top of {{?I-D.jhoyla-tls-extended-key-schedule}} for TLS key schedule enhancements
+- include the TEAP extensions in {{?I-D.draft-lear-eap-teap-brski}}
 
 # IANA Considerations
 

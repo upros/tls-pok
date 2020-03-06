@@ -205,7 +205,7 @@ The protocol outlined here can be broadly broken up into 3 distinct areas:
 This document captures all 3 areas, but it may be more appropriate to split the work into multiple documents e.g.:
 
 - piggy back on top of {{?I-D.jhoyla-tls-extended-key-schedule}} for TLS key schedule enhancements
-- include the TEAP extensions in Eliot's TEAP-BRSKI draft
+- include the TEAP extensions in {{?I-D.lear-eap-teap-brski}} draft
 
 # IANA Considerations
 

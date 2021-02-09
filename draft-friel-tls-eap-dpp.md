@@ -124,7 +124,7 @@ The handshake is shown in Figure 1.
 
 Multiple options for modifying the TLS 1.3 key schedule have been proporsed recently including {{?I-D.stebila-tls-hybrid-design}} and {{?I-D.jhoyla-tls-extended-key-schedule}}. The key schedule used for TLS-POK will align with the final direction chosen by the TLS WG.
 
-This document proposes aligning with the model outlined in {{?I-D.jhoyla-tls-extended-key-schedule}} where the shared secrets derived from the bskey and key_share key exchanges are injected in sequence into the key schedule.
+This document proposes aligning with the model outlined in {{?I-D.jhoyla-tls-extended-key-schedule}} where the shared secrets derived from the bskey and key_share key exchanges are injected together into the key schedule to create the Handshake Secret.
 
 The key schedule for TLS-POK is as follows:
 
@@ -142,13 +142,7 @@ The key schedule for TLS-POK is as follows:
                                  Derive-Secret(., "derived", "")
                                        |
                                        v
-                        bskey_input -> HKDF-Extract
-                                       |
-                                       v
-                                 Derive-Secret(., "derived", "")
-                                       |
-                                       v
-                (EC)DHE -> HKDF-Extract = Handshake Secret
+            bskey_input || (EC)DHE -> HKDF-Extract = Handshake Secret
                                        |
                                        +-----> Derive-Secret(...)
                                        +-----> Derive-Secret(...)

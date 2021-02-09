@@ -2,7 +2,7 @@
 
 title: "Bootstrapped TLS Authentication"
 abbrev: TLS-POK
-docname: draft-friel-tls-eap-dpp-00
+docname: draft-friel-tls-eap-dpp-01
 category: std
 ipr: trust200902
 
@@ -83,16 +83,26 @@ This document assumes the latter and that the server generates unique ephemeral 
 ## Bootstrap Key Extension
 
       struct {
-          opaque bskey[32];
+          select (Handshake.msg_type) {
+              case client_hello:
+                  opaque bskey[32];
+
+              case server_hello:
+                  opaque key_exchange<1..2^16-1>;
+          };
       } BootstrapKey;
 
-The bootstrapping key of the client is specified using the BootstrapKey extension.  The 'bskey' field of this extension SHALL consist of the base64 encoded SHA256 digest of the DER-encoded ASN.1 subjectPublicKeyInfo representation of the bootstrapping public key. 
+The BootstrapKey extension is used by the client in its ClientHello message to specify its bootstrapping key identifier. The 'bskey' field of this extension SHALL consist of the base64 encoded SHA256 digest of the DER-encoded ASN.1 subjectPublicKeyInfo representation of the bootstrapping public key.
+
+The BoostrapKey extension is used by the server in its ServerHello message to specify its ephemeral ECDH keying information. The 'key_exchange' field contains the key exchange information on the curve that the bootstrapping key is on.
 
 ##  Changes to TLS 1.3 Handshake
 
-The client identifies the bootstrapping key in the ClientHello using the BootstrapKey extension. The server looks up the client's bootstrapping key in its database by checking the SHA256 hash of each entry with the value received in the ClientHello.  If no match is found, the server SHOULD respond with an unknown_bskey error alert.
+The client identifies the bootstrapping key in the ClientHello using the BootstrapKey extension 'bskey' field. The server looks up the client's bootstrapping key in its database by checking the SHA256 hash of each entry with the value received in the ClientHello.  If no match is found, the server MAY proceed with the TLS handshake without using the bootstrapping key as input to the key schedule, or MAY terminate the TLS handshake with an alert.
 
-If the server found the matching bootstrap key, the server generates an ephemeral ECDH keypair on the curve indicated in the bootstrap public key information, and performs an ECDH operation using the client bootstrap key and the server's ephemeral keypair. The server echos the BootstrapKey extension back to the client in the ServerHello to explicitly confirm to the client that it has performed an ECDH using the bootstrap key, and has injected the output into the key schedule.
+[[ TODO: should we define an explicit unknown_bsk_identity alert, similar to unknown_psk_identity ]]
+
+If the server found the matching bootstrap key, the server generates an ephemeral ECDH keypair on the curve indicated in the bootstrap public key information, and performs an ECDH operation using the client bootstrap key and the server's ephemeral keypair. The server includes a BootstrapKey extension in its ServerHello that includes its ephemeral ECDH public key in the 'key_exchange' field. This explicitly confirms to the client that the server has performed an ECDH operation using the bootstrap key, and has injected the output into the key schedule.
 
 This is in addition to, and independent from, the (EC)DH that the server carries out when handling the key_share extension.
 
@@ -210,7 +220,4 @@ IANA will allocated an ExtensionType for the bskey extension from the appropriat
 Bootstrap and trust establishment by the TLS server is based on proof of knowledge of the client's bootstrap public key. An attack on the bootstrapping method which substitutes the public key of a corrupted device for the public key of an honest device can result in the TLS sever on-boarding and trusting the corrupted device.
 
 Trust on the part of the client is not strong and is based on an assumption that the public bootstrapping key is not widely disseminated. If an adversary has knowledge of the bootstrap public key, the adversary may be able to make the client bootstrap against the adversary's network. For example, if an adversary intercepts and scans QR labels on clients, and the adversary can force the client to connect to its server, then the adversary can complete the TLS-POK handshake with the client and the client will connect to the adversary's server. Since physical possession implies ownership, there is nothing to prevent a stolen device from being on-boarded. 
-
-
-
 

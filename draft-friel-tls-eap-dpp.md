@@ -2,7 +2,7 @@
 
 title: "Bootstrapped TLS Authentication"
 abbrev: TLS-POK
-docname: draft-friel-tls-eap-dpp-01
+docname: draft-friel-tls-eap-dpp-02
 category: std
 ipr: trust200902
 

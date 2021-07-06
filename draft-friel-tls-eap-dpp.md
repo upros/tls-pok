@@ -2,7 +2,7 @@
 
 title: "Bootstrapped TLS Authentication"
 abbrev: TLS-POK
-docname: draft-friel-tls-eap-dpp-02
+docname: draft-friel-tls-eap-dpp-03
 category: std
 ipr: trust200902
 
@@ -51,7 +51,7 @@ This document defines a TLS extension that enables a server to prove to a client
 On-boarding of devices with no, or limited, user interface can be difficult.  Typically, a credential is needed to access the network
 and network connectivity is needed to obtain a credential.  This poses a catch-22.
 
-If trust in the integrity of a device's public key can be obtained in an out-of-band fashion, a device can be authenticated and provisioned with a usable credential for network access.  While this authentication can be strong, the device's authentication of the network is somewhat weaker.  [duckling]] presents a functional security model to address this asymmetry.
+If trust in the integrity of a device's public key can be obtained in an out-of-band fashion, a device can be authenticated and provisioned with a usable credential for network access.  While this authentication can be strong, the device's authentication of the network is somewhat weaker.  [duckling] presents a functional security model to address this asymmetry.
 
 There are on-boarding protocols, such as [DPP], to address this use case but they have drawbacks. [DPP] for instance does not support wired network access.  This document describes an on-boarding protocol, which we refer to as TLS Proof of Knowledge or TLS-POK.
 
@@ -83,7 +83,7 @@ This document defines the "bskey" extended PSK type by expanding on the work in 
        bskey(TBD), (255)
      } ExtendedPskIdentityType;
 
-A bskey PSK is a varient of an external PSK which is derived from a static source, in this case a public key. 
+A bskey PSK is a varient of an external PSK which, in this case, is derived from a public key. 
 
 The PSKIdentity of a bskey extended PSK is encoded with a string derived from the DER-encoded ASN.1 subjectPublicKeyInfo representation of the bootstrapping public key.
 
@@ -92,7 +92,7 @@ The PSKIdentity of a bskey extended PSK is encoded with a string derived from th
      } BootstrapPSKIdentity;
 
 
-Both the bskey PSK and the BootstrapPSKIdentity are computed using {{!RFC5869}}:
+Both the bskey PSK and the BootstrapPSKIdentity are computed using {{!RFC5869}} with the hash algorithm from the ciphersuite:
 
 ~~~
 bskeypsk = HKDF-Expand(HKDF-Extract(<>, bskey),
@@ -103,12 +103,11 @@ where:
   - <> is a NULL salt 
   - bskey is the DER-encoded ASN.1 subjectPublicKeyInfo
     representation of the bootstrapping key
-  - L is the length of the underlying hash algorithm used in the
-    ciphersuite
+  - L is the length of the digest of the underlying hash
+    algorithm 
 ~~~
 
-[[ Open question: should we use HKDF w/SHA-256 for the identity so the server can store digests along with the bootstrapping keys and not require the server to generate them on the fly with a possibly different hash algorithm? It makes sense to have the bskeypsk derivation use the underlying hash algorithm because the resulting PSK is going to be inserted into the TLS 1.3 key schedule which will use HKDF with that hash algorithm and having the PSK be of suitable size is A Good Thing, but we might want to optimize server performance by hard-wiring SHA-256 for the identity. Discuss! ]]
-
+A performance versus storage tradeoff a server can choose is to precompute the identity of every bootstrapped key with every hash algorithm that it uses in TLS and use that to quickly lookup the bootstrap key and generate the PSK. Servers that choose not to employ this optimization will have to do a runtime check with every bootstrap key it holds against the identity the client provides.
 
 ##  Changes to TLS 1.3 Handshake
 
@@ -118,9 +117,13 @@ The client includes the "tls_cert_with_extern_psk" extension in the ClientHello,
 
 If the server found the matching bootstrap key, it generates the bskeypsk and includes the "tls_cert_with_extern_psk" extension in the ServerHello message. When these extensions have been successfully negotiated, the TLS 1.3 key schedule SHALL include both the bskeypsk in the Early Secret derivation and an (EC)DHE shared secret value in the Handshake Secret derivation. 
 
-After successful negotiation of these extensions, the full TLS 1.3 handshake is performed with the additional caveat that the client authenticates with a raw public key (its bootstrapping key) per {{!RFC7250}}. The bootstrapping key is always an elliptic curve public key, therefore the ClientCertTypeExtension SHALL not be included in the ClientHello as it is implied by the presence, and acceptance, of the bootstrapping key identifer. The type of the client's Certificate SHALL be RawPublicKey and contain the client's bootstrapping key as a DER-encoded ASN.1 subjectPublicKeyInfo SEQUENCE.
+After successful negotiation of these extensions, the full TLS 1.3 handshake is performed with the additional caveat that the client authenticates with a raw public key (its bootstrapping key) per {{!RFC7250}}. The bootstrapping key is always an elliptic curve public key, therefore the ClientCertTypeExtension SHALL always indicate RawPublicKey and the type of the client's Certificate SHALL be ECDSA and contain the client's bootstrapping key as a DER-encoded ASN.1 subjectPublicKeyInfo SEQUENCE.
+
+[[DISCUSS: since the bskey identity is being negotiated we already know what the client cert type will be, the ClientCertTypeExtension is superfluous. Should it be removed from this spec?]]
 
 When the server processes the client's Certificate it MUST ensure that it is identical to the bootstrapping public key that it used to generate an external PSK and PSKIdentifier for this handshake. 
+
+When clients use the [duckling] form of authentication, they MAY forgo the checking of the server's certificate in the CertificateVerify and rely on the integrity of the bootstrapping method employed to distribute its key in order to validate trust in the authenticated TLS connection. 
 
 The handshake is shown in Figure 1.
 
@@ -131,20 +134,23 @@ The handshake is shown in Figure 1.
          ClientHello
          + bskey_id
          + cert_with_extern_psk
+         + client_cert_type=RawPublicKey
          + key_share                -------->
                                                         ServerHello
                                                          + bskey_id
                                              + cert_with_extern_psk
+                                    + client_cert_type=RawPublicKey
                                                         + key_share
                                               {EncryptedExtensions}
-                                                {CertificatRequest}
+                                               {CertificateRequest}
                                                       {Certificate}
+                                                {CertificateVerify}
                                     <--------            {Finished}
          {Certificate}
+         {CertificateVerify}
          {Finished}                 -------->
          [Application Data]         <------->    [Application Data]
 ~~~
-
 
                     Figure 1: TLS 1.3 TLS-POK Handshake
 

@@ -47,6 +47,7 @@ informative:
       -
         ins: R. Anderson
         name: Ross Anderson
+    title: Extensible Pre-Shared Key Types for TLS
     target: https://chris-wood.github.io/draft-tls-extensible-psks/draft-group-tls-extensible-psks.html
 
 --- abstract

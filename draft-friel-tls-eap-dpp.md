@@ -174,20 +174,20 @@ Devices whose bootstrapping key can been obtained in an out-of-band fashion can 
 Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP Identify request to the newly connected peer. For unprovisioned devices that desire to take advantage of TLS-POK, there is no initial realm in which to construct an NAI (see {{?RFC4282}}) so the initial EAP Identity response SHOULD contain simply the name "TLS-POK" in order to indicate to the Authenticator that an EAP method that supports TLS-POK SHOULD be started.
 
 ~~~
-	   Authenticating Peer     Authenticator
- 	   -------------------     -------------
-	                            <- EAP-Request/
-				    Identity
+   Authenticating Peer     Authenticator
+   -------------------     -------------
+                            <- EAP-Request/
+                            Identity
 
-	    EAP-Response/
-	    Identity (TLS-POK) ->
+    EAP-Response/
+    Identity (TLS-POK) ->
 
-	                            <- EAP-Request/
-				    EAP-Type=TEAP
-				    (TLS Start)
-			       .
-			       .
-			       .
+                            <- EAP-Request/
+                            EAP-Type=TEAP
+                           (TLS Start)
+                       .
+                       .
+                       .
 ~~~
 
 

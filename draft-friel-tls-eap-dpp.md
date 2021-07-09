@@ -205,7 +205,7 @@ This document captures all 4 areas, but it may be more appropriate to merge into
 
 # IANA Considerations
 
-IANA will allocated an ExtensionPSKIdentityType for the bskey type from the TLS 1.3 repository created by {{?I-D.ietf-group-tls-extensible-psks}} and replace TBD in this document with that number.
+IANA will allocated an ExtensionPSKIdentityType for the bskey type from the TLS 1.3 repository created by [extensible-psks] and replace TBD in this document with that number.
 
 # Security Considerations 
 

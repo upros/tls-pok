@@ -33,11 +33,21 @@ informative:
         ins: F. Stajano
         name: Frank Stajano
       -
-        ins: R. Anderson
-        name: Ross Anderson
+        ins: E. Rescorla
+        name: Eric Rescorla
 
     title: "The Ressurecting Ducking: Security Issues for Ad-Hoc Wireless Networks"
     date: 1999
+
+  extensible-psks:
+    author:
+      -
+        ins: C. Wood
+        name: Christopher Wood
+      -
+        ins: R. Anderson
+        name: Ross Anderson
+    target: https://chris-wood.github.io/draft-tls-extensible-psks/draft-group-tls-extensible-psks.html
 
 --- abstract
 
@@ -77,7 +87,7 @@ The bootstrapping modifications introduce an extension to identify a "bootstrapp
 
 ## Bootstrap Extended PSK
 
-This document defines the "bskey" extended PSK type by expanding on the work in {{?I-D.ietf-group-tls-extensible-psks}}.
+This document defines the "bskey" extended PSK type by expanding on the work in [extensible-psks].
 
      enum {
        bskey(TBD), (255)

@@ -70,7 +70,7 @@ There are on-boarding protocols, such as [DPP], to address this use case but the
 
 The mechanism for on-boarding of devices defined in this document relies on bootstrap key pairs. A client device has an associated elliptic curve (EC) key pair. The key pair may be static and baked into device firmware at manufacturing time, or may be dynamic and generated at on-boarding time by the device. If this public key, specifically the ASN.1 SEQUENCE SubjectPublicKeyInfo from {{?RFC5280}}, can be shared in a trustworthy manner with a TLS server, a form of "origin entity authentication" (the step from which all subsequent authentication proceeds) can be obtained. 
 
-The exact mechanism by which the server gains knowledge of the public key is out of scope of this specification, but possible mechanisms include scanning a QR code to obtain a base64 encoding of the ASN.1-formatted public key or upload of a Bill of Materials (BOM). If the QR code is physically attached to the client device, or the BOM is associated with the device, the assumption is that the public key obtained in this bootstrapping method belongs to the client. In this model, physical possession of the device implies legitimate ownership.
+The exact mechanism by which the server gains knowledge of the public key is out of scope of this specification, but possible mechanisms include scanning a QR code to obtain a base64 encoding of the ASN.1-formatted public key or uploading of a Bill of Materials (BOM) which includes the public key. If the QR code is physically attached to the client device, or the BOM is associated with the device, the assumption is that the public key obtained in this bootstrapping method belongs to the client. In this model, physical possession of the device implies legitimate ownership.
 
 The server may have knowledge of multiple bootstrap public keys corresponding to multiple devices, and TLS extensions are defined in this document that enable the server to identity a specific bootstrap public key correspinding to a specific device.
 
@@ -124,13 +124,9 @@ A performance versus storage tradeoff a server can choose is to precompute the i
 
 The client includes the "tls_cert_with_extern_psk" extension in the ClientHello, per {{!RFC8773}}, and identifies the bootstrapping key using the BootstrapPSKIdentity extension. The server looks up the client's bootstrapping key in its database by checking the hash of each entry with the value received in the ClientHello.  If no match is found, the server SHALL terminate the TLS handshake with an alert.
 
-[[ TODO: should we define an explicit unknown_bsk_identity alert, similar to unknown_psk_identity ]]
-
 If the server found the matching bootstrap key, it generates the bskeypsk and includes the "tls_cert_with_extern_psk" extension in the ServerHello message. When these extensions have been successfully negotiated, the TLS 1.3 key schedule SHALL include both the bskeypsk in the Early Secret derivation and an (EC)DHE shared secret value in the Handshake Secret derivation. 
 
 After successful negotiation of these extensions, the full TLS 1.3 handshake is performed with the additional caveat that the client authenticates with a raw public key (its bootstrapping key) per {{!RFC7250}}. The bootstrapping key is always an elliptic curve public key, therefore the ClientCertTypeExtension SHALL always indicate RawPublicKey and the type of the client's Certificate SHALL be ECDSA and contain the client's bootstrapping key as a DER-encoded ASN.1 subjectPublicKeyInfo SEQUENCE.
-
-[[DISCUSS: since the bskey identity is being negotiated we already know what the client cert type will be, the ClientCertTypeExtension is superfluous. Should it be removed from this spec?]]
 
 When the server processes the client's Certificate it MUST ensure that it is identical to the bootstrapping public key that it used to generate an external PSK and PSKIdentifier for this handshake. 
 
@@ -193,8 +189,6 @@ Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP I
 
 # Summary of Work
 
-[TODO: agree with WG chairs where this work lives and where it should be documented.]
-
 The protocol outlined here can be broadly broken up into 4 distinct areas:
 
 - TLS extensions to transport the bootstrap public key identifier
@@ -202,7 +196,7 @@ The protocol outlined here can be broadly broken up into 4 distinct areas:
 - The client's use of a raw public key in its certificate
 - TEAP extensions to leverage the new TLS-POK handshake for trust establishment
 
-This document captures all 4 areas, but it may be more appropriate to merge into an existing document.
+This document captures all 4 areas.
 
 # IANA Considerations
 
@@ -212,7 +206,7 @@ IANA will allocated an ExtensionPSKIdentityType for the bskey type from the TLS 
 
 Bootstrap and trust establishment by the TLS server is based on proof of knowledge of the client's bootstrap public key, a non-public datum. The TLS server obtains proof that the client knows its bootstrap public key and, in addition, also possesses its corresponding private analog.
 
-Trust on the part of the client is based on validation of the server certificate and the TLS 1.3 handshake. In addition, the client assumes that knowledge of its public bootstrapping key is not widely disseminated and therefore any device that proves knowledge of it is the appropriate device from which to receive provisioning, for instance via {{?RFC7170}}.
+Trust on the part of the client is based on validation of the server certificate and the TLS 1.3 handshake. In addition, the client assumes that knowledge of its public bootstrapping key is not widely disseminated and therefore any device that proves knowledge of it's bootstrapping key is the appropriate device from which to receive provisioning, for instance via {{?RFC7170}}. [duckling] describes a security model for this type of "imprinting".
 
 An attack on the bootstrapping method which substitutes the public key of a corrupted device for the public key of an honest device can result in the TLS sever on-boarding and trusting the corrupted device.
 

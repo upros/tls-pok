@@ -66,13 +66,23 @@ If trust in the integrity of a device's public key can be obtained in an out-of-
 
 There are on-boarding protocols, such as [DPP], to address this use case but they have drawbacks. [DPP] for instance does not support wired network access.  This document describes an on-boarding protocol, which we refer to as TLS Proof of Knowledge or TLS-POK.
 
+## Terminology
+
+BSK
+
+DPP
+
+EPSK
+
+PSK
+
 ## Bootstrap Key Pair
 
 The mechanism for on-boarding of devices defined in this document relies on bootstrap key pairs. A client device has an associated elliptic curve (EC) key pair. The key pair may be static and baked into device firmware at manufacturing time, or may be dynamic and generated at on-boarding time by the device. If this public key, specifically the ASN.1 SEQUENCE SubjectPublicKeyInfo from {{?RFC5280}}, can be shared in a trustworthy manner with a TLS server, a form of "origin entity authentication" (the step from which all subsequent authentication proceeds) can be obtained. 
 
 The exact mechanism by which the server gains knowledge of the public key is out of scope of this specification, but possible mechanisms include scanning a QR code to obtain a base64 encoding of the ASN.1-formatted public key or uploading of a Bill of Materials (BOM) which includes the public key. If the QR code is physically attached to the client device, or the BOM is associated with the device, the assumption is that the public key obtained in this bootstrapping method belongs to the client. In this model, physical possession of the device implies legitimate ownership.
 
-The server may have knowledge of multiple bootstrap public keys corresponding to multiple devices, and TLS extensions are defined in this document that enable the server to identity a specific bootstrap public key correspinding to a specific device.
+The server may have knowledge of multiple bootstrap public keys corresponding to multiple devices, and existing TLS mechanisms are leveraged that enable the server to identity a specific bootstrap public key corresponding to a specific device.
 
 Using the process defined herein, the client proves to the server that it has possession of the private analog to its public bootstrapping key. Provided that the mechanism in which the server obtained the bootstrapping key is trustworthy, a commensurate amount of authenticity of the resulting connection can be obtained. The server also proves that it knows the client's public key which, if the client does not gratuitously expose its public key, can be used to obtain a modicum of correctness, that the client is connecting to the correct network (see [duckling]).
 
@@ -84,39 +94,52 @@ Any bootstrapping method defined for, or used by, [DPP] is compatible with TLS-P
 
 # Bootstrapping in TLS 1.3
 
-The bootstrapping modifications introduce an extension to identify a "bootstrapping" key which is converted into an external PSK and used directly in the TLS 1.3 handshake.  This key MUST be from a cryptosystem suitable for doing ECDSA. 
+Bootstrapping in TLS 1.3 leverages Certificate-Based Authentication with an External Pre-Shared Key {{!RFC8773}}. The External PSK (EPSK) is derived from the BSK public key, and the EPSK is imported using {{ID-xx}}. This BSK MUST be from a cryptosystem suitable for doing ECDSA.
+
+The TLS PSK handshake gives the client proof that the server knows the BSK public key. Certificate based authentication of the client by the server is carried out using the BSK, giving the server proof that the client knows the BSK private key. This satisfies the proof of ownership requirements outlined in {{introduction}}.
 
 ## Bootstrap Extended PSK
 
-This document defines the "bskey" extended PSK type by expanding on the work in [extensible-psks].
+## External PSK Derivation
 
-     enum {
-       bskey(TBD), (255)
-     } ExtendedPskIdentityType;
-
-A bskey PSK is a varient of an external PSK which, in this case, is derived from a public key. 
-
-The PSKIdentity of a bskey extended PSK is encoded with a string derived from the DER-encoded ASN.1 subjectPublicKeyInfo representation of the bootstrapping public key.
-
-     struct {
-       opaque identity<1..2^32-1>
-     } BootstrapPSKIdentity;
-
-
-Both the bskey PSK and the BootstrapPSKIdentity are computed using {{!RFC5869}} with the hash algorithm from the ciphersuite:
+An {{!I-D.ietf-tls-external-psk-importer}} EPSK is made of of the tuple of (Base Key, External Identity, Hash). The EPSK is derived from the BSK public key using {{!RFC5869}} with the hash algorithm from the ciphersuite:
 
 ~~~
-bskeypsk = HKDF-Expand(HKDF-Extract(<>, bskey),
-                       "tls13-extended-psk-bskey", L)
-identity = HKDF-Expand(HKDF-Extract(<>, bskey),
-                       "tls13-psk-identity-bskey", L)
+epsk   = HKDF-Expand(HKDF-Extract(<>, bskey),
+                       "tls13-imported-bsk", L)
+epskid = HKDF-Expand(HKDF-Extract(<>, bskey),
+                       "tls13-bspsk-identity", L)
 where:
+  - epsk is the {{!I-D.ietf-tls-external-psk-importer}} Base Key
+  - epskid is the {{!I-D.ietf-tls-external-psk-importer}} External Identity
   - <> is a NULL salt 
   - bskey is the DER-encoded ASN.1 subjectPublicKeyInfo
-    representation of the bootstrapping key
+    representation of the BSK public key
   - L is the length of the digest of the underlying hash
     algorithm 
 ~~~
+
+The {{!I-D.ietf-tls-external-psk-importer}} ImportedIdentity structure is defined as:
+
+~~~
+struct {
+   opaque external_identity<1...2^16-1>;
+   opaque context<0..2^16-1>;
+   uint16 target_protocol;
+   uint16 target_kdf;
+} ImportedIdentity;
+~~~
+
+and is created using the following values:
+
+~~~
+external_identity = epskid
+context = "tls13-bsk"
+target_protocol = TLS1.3(0x0304)
+target_kdf = HKDF_SHA256(0x0001)
+~~~
+
+The EPSK and ImportedIdentity are used in the TLS handshake as specified in {{!I-D.ietf-tls-external-psk-importer}}.
 
 A performance versus storage tradeoff a server can choose is to precompute the identity of every bootstrapped key with every hash algorithm that it uses in TLS and use that to quickly lookup the bootstrap key and generate the PSK. Servers that choose not to employ this optimization will have to do a runtime check with every bootstrap key it holds against the identity the client provides.
 

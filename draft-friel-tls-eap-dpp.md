@@ -100,8 +100,6 @@ Bootstrapping in TLS 1.3 leverages Certificate-Based Authentication with an Exte
 
 The TLS PSK handshake gives the client proof that the server knows the BSK public key. Certificate based authentication of the client by the server is carried out using the BSK, giving the server proof that the client knows the BSK private key. This satisfies the proof of ownership requirements outlined in {{introduction}}.
 
-## Bootstrap Extended PSK
-
 ## External PSK Derivation
 
 An {{!I-D.ietf-tls-external-psk-importer}} EPSK is made of of the tuple of (Base Key, External Identity, Hash). The EPSK is derived from the BSK public key using {{!RFC5869}} with the hash algorithm from the ciphersuite:

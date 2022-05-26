@@ -99,12 +99,12 @@ epsk   = HKDF-Expand(HKDF-Extract(<>, bskey),
 epskid = HKDF-Expand(HKDF-Extract(<>, bskey),
                        "tls13-bspsk-identity", L)
 where:
-  - epsk: the {{!I-D.ietf-tls-external-psk-importer}} Base Key
-  - epskid: the {{!I-D.ietf-tls-external-psk-importer}} External Identity
-  - <>: a NULL salt 
-  - bskey: the DER-encoded ASN.1 subjectPublicKeyInfo
+  - epsk is the EPSK Base Key
+  - epskid is the EPSK External Identity
+  - <> is a NULL salt 
+  - bskey is the DER-encoded ASN.1 subjectPublicKeyInfo
     representation of the BSK public key
-  - L: the length of the digest of the underlying hash
+  - L is the length of the digest of the underlying hash
     algorithm 
 ~~~
 

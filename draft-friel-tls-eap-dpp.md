@@ -2,7 +2,7 @@
 
 title: "Bootstrapped TLS Authentication"
 abbrev: TLS-POK
-docname: draft-friel-tls-eap-dpp-03
+docname: draft-friel-tls-eap-dpp-05
 category: std
 ipr: trust200902
 
@@ -38,17 +38,6 @@ informative:
 
     title: "The Ressurecting Ducking: Security Issues for Ad-Hoc Wireless Networks"
     date: 1999
-
-  extensible-psks:
-    author:
-      -
-        ins: C. Wood
-        name: Christopher Wood
-      -
-        ins: R. Anderson
-        name: Ross Anderson
-    title: Extensible Pre-Shared Key Types for TLS
-    target: https://chris-wood.github.io/draft-tls-extensible-psks/draft-group-tls-extensible-psks.html
 
 --- abstract
 

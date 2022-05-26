@@ -66,69 +66,92 @@ If trust in the integrity of a device's public key can be obtained in an out-of-
 
 There are on-boarding protocols, such as [DPP], to address this use case but they have drawbacks. [DPP] for instance does not support wired network access.  This document describes an on-boarding protocol, which we refer to as TLS Proof of Knowledge or TLS-POK.
 
+## Terminology
+
+The following terminology is used throughout this document.
+
+- BSK: Bootstrap Key which is an elliptic curve public private key pair.
+
+- DPP: Device Provisioning Protocol
+
+- EPSK: External Pre-Shared Key
+
+- PSK: Pre-Shared Key
+
 ## Bootstrap Key Pair
 
-The mechanism for on-boarding of devices defined in this document relies on bootstrap key pairs. A client device has an associated elliptic curve (EC) key pair. The key pair may be static and baked into device firmware at manufacturing time, or may be dynamic and generated at on-boarding time by the device. If this public key, specifically the ASN.1 SEQUENCE SubjectPublicKeyInfo from {{?RFC5280}}, can be shared in a trustworthy manner with a TLS server, a form of "origin entity authentication" (the step from which all subsequent authentication proceeds) can be obtained. 
+The mechanism for on-boarding of devices defined in this document relies on bootstrap key pairs. A client device has an associated elliptic curve (EC) bootstrap key pair (BSK). The BSK may be static and baked into device firmware at manufacturing time, or may be dynamic and generated at on-boarding time by the device. If the BSK public key, specifically the ASN.1 SEQUENCE SubjectPublicKeyInfo from {{!RFC5280}}, can be shared in a trustworthy manner with a TLS server, a form of "origin entity authentication" (the step from which all subsequent authentication proceeds) can be obtained. 
 
-The exact mechanism by which the server gains knowledge of the public key is out of scope of this specification, but possible mechanisms include scanning a QR code to obtain a base64 encoding of the ASN.1-formatted public key or uploading of a Bill of Materials (BOM) which includes the public key. If the QR code is physically attached to the client device, or the BOM is associated with the device, the assumption is that the public key obtained in this bootstrapping method belongs to the client. In this model, physical possession of the device implies legitimate ownership.
+The exact mechanism by which the server gains knowledge of the BSK public key is out of scope of this specification, but possible mechanisms include scanning a QR code to obtain a base64 encoding of the ASN.1-formatted public key or uploading of a Bill of Materials (BOM) which includes the public key. If the QR code is physically attached to the client device, or the BOM is associated with the device, the assumption is that the public key obtained in this bootstrapping method belongs to the client. In this model, physical possession of the device implies legitimate ownership.
 
-The server may have knowledge of multiple bootstrap public keys corresponding to multiple devices, and TLS extensions are defined in this document that enable the server to identity a specific bootstrap public key correspinding to a specific device.
+The server may have knowledge of multiple BSK public keys corresponding to multiple devices, and existing TLS mechanisms are leveraged that enable the server to identity a specific bootstrap public key corresponding to a specific device.
 
-Using the process defined herein, the client proves to the server that it has possession of the private analog to its public bootstrapping key. Provided that the mechanism in which the server obtained the bootstrapping key is trustworthy, a commensurate amount of authenticity of the resulting connection can be obtained. The server also proves that it knows the client's public key which, if the client does not gratuitously expose its public key, can be used to obtain a modicum of correctness, that the client is connecting to the correct network (see [duckling]).
+Using the process defined herein, the client proves to the server that it has possession of the private analog to its public bootstrapping key. Provided that the mechanism in which the server obtained the BSK public key is trustworthy, a commensurate amount of authenticity of the resulting connection can be obtained. The server also proves that it knows the client's public key which, if the client does not gratuitously expose its public key, can be used to obtain a modicum of correctness, that the client is connecting to the correct network (see [duckling]).
 
 ## Alignment with Wi-Fi Alliance Device Provisioning Profile
 
-The definition of the boostrap public key aligns with that given in [DPP]. This, for example, enables the QR code format as defined in [DPP] to be reused for TLS-POK. Therefore, a device that supports both wired LAN and Wi-Fi LAN connections can have a single QR code printed on its label, and the bootstrap key can be used for DPP if the device bootstraps against a Wi-Fi network, or TLS-POK if the device bootstraps against a wired network. Similarly, a common bootstrap public key format could be imported in a BOM into a server that handles devices connecting over both wired and Wi-Fi networks.
+The definition of the BSK public key aligns with that given in [DPP]. This, for example, enables the QR code format as defined in [DPP] to be reused for TLS-POK. Therefore, a device that supports both wired LAN and Wi-Fi LAN connections can have a single QR code printed on its label, and the bootstrap key can be used for DPP if the device bootstraps against a Wi-Fi network, or TLS-POK if the device bootstraps against a wired network. Similarly, a common bootstrap public key format could be imported in a BOM into a server that handles devices connecting over both wired and Wi-Fi networks.
 
 Any bootstrapping method defined for, or used by, [DPP] is compatible with TLS-POK.
 
 # Bootstrapping in TLS 1.3
 
-The bootstrapping modifications introduce an extension to identify a "bootstrapping" key which is converted into an external PSK and used directly in the TLS 1.3 handshake.  This key MUST be from a cryptosystem suitable for doing ECDSA. 
+Bootstrapping in TLS 1.3 leverages Certificate-Based Authentication with an External Pre-Shared Key {{!RFC8773}}. The External PSK (EPSK) is derived from the BSK public key, and the EPSK is imported using {{!I-D.ietf-tls-external-psk-importer}}. This BSK MUST be from a cryptosystem suitable for doing ECDSA.
 
-## Bootstrap Extended PSK
+The TLS PSK handshake gives the client proof that the server knows the BSK public key. Certificate based authentication of the client by the server is carried out using the BSK, giving the server proof that the client knows the BSK private key. This satisfies the proof of ownership requirements outlined in {{introduction}}.
 
-This document defines the "bskey" extended PSK type by expanding on the work in [extensible-psks].
+## External PSK Derivation
 
-     enum {
-       bskey(TBD), (255)
-     } ExtendedPskIdentityType;
-
-A bskey PSK is a varient of an external PSK which, in this case, is derived from a public key. 
-
-The PSKIdentity of a bskey extended PSK is encoded with a string derived from the DER-encoded ASN.1 subjectPublicKeyInfo representation of the bootstrapping public key.
-
-     struct {
-       opaque identity<1..2^32-1>
-     } BootstrapPSKIdentity;
-
-
-Both the bskey PSK and the BootstrapPSKIdentity are computed using {{!RFC5869}} with the hash algorithm from the ciphersuite:
+An {{!I-D.ietf-tls-external-psk-importer}} EPSK is made of of the tuple of (Base Key, External Identity, Hash). The EPSK is derived from the BSK public key using {{!RFC5869}} with the hash algorithm from the ciphersuite:
 
 ~~~
-bskeypsk = HKDF-Expand(HKDF-Extract(<>, bskey),
-                       "tls13-extended-psk-bskey", L)
-identity = HKDF-Expand(HKDF-Extract(<>, bskey),
-                       "tls13-psk-identity-bskey", L)
+epsk   = HKDF-Expand(HKDF-Extract(<>, bskey),
+                       "tls13-imported-bsk", L)
+epskid = HKDF-Expand(HKDF-Extract(<>, bskey),
+                       "tls13-bspsk-identity", L)
 where:
+  - epsk is the {{!I-D.ietf-tls-external-psk-importer}} Base Key
+  - epskid is the {{!I-D.ietf-tls-external-psk-importer}} External Identity
   - <> is a NULL salt 
   - bskey is the DER-encoded ASN.1 subjectPublicKeyInfo
-    representation of the bootstrapping key
+    representation of the BSK public key
   - L is the length of the digest of the underlying hash
     algorithm 
 ~~~
 
+The {{!I-D.ietf-tls-external-psk-importer}} ImportedIdentity structure is defined as:
+
+~~~
+struct {
+   opaque external_identity<1...2^16-1>;
+   opaque context<0..2^16-1>;
+   uint16 target_protocol;
+   uint16 target_kdf;
+} ImportedIdentity;
+~~~
+
+and is created using the following values:
+
+~~~
+external_identity = epskid
+context = "tls13-bsk"
+target_protocol = TLS1.3(0x0304)
+target_kdf = HKDF_SHA256(0x0001)
+~~~
+
+The EPSK and ImportedIdentity are used in the TLS handshake as specified in {{!I-D.ietf-tls-external-psk-importer}}.
+
 A performance versus storage tradeoff a server can choose is to precompute the identity of every bootstrapped key with every hash algorithm that it uses in TLS and use that to quickly lookup the bootstrap key and generate the PSK. Servers that choose not to employ this optimization will have to do a runtime check with every bootstrap key it holds against the identity the client provides.
 
-##  Changes to TLS 1.3 Handshake
+## Changes to TLS 1.3 Handshake
 
-The client includes the "tls_cert_with_extern_psk" extension in the ClientHello, per {{!RFC8773}}, and identifies the bootstrapping key using the BootstrapPSKIdentity extension. The server looks up the client's bootstrapping key in its database by checking the hash of each entry with the value received in the ClientHello.  If no match is found, the server SHALL terminate the TLS handshake with an alert.
+The client includes the "tls_cert_with_extern_psk" extension in the ClientHello, per {{!RFC8773}}. The client identifies the BSK by inserting the serialized content of ImportedIdentity into the PskIdentity.identity in the PSK extension, per {{!I-D.ietf-tls-external-psk-importer}}. The server looks up the client's EPSK key in its database using the mechanisms documented in {{!I-D.ietf-tls-external-psk-importer}}.  If no match is found, the server SHALL terminate the TLS handshake with an alert.
 
-If the server found the matching bootstrap key, it generates the bskeypsk and includes the "tls_cert_with_extern_psk" extension in the ServerHello message. When these extensions have been successfully negotiated, the TLS 1.3 key schedule SHALL include both the bskeypsk in the Early Secret derivation and an (EC)DHE shared secret value in the Handshake Secret derivation. 
+If the server found the matching BSK, it includes the "tls_cert_with_extern_psk" extension in the ServerHello message, and the corresponding EPSK identity in the "pre_shared_key" extension. When these extensions have been successfully negotiated, the TLS 1.3 key schedule SHALL include both the EPSK in the Early Secret derivation and an (EC)DHE shared secret value in the Handshake Secret derivation. 
 
-After successful negotiation of these extensions, the full TLS 1.3 handshake is performed with the additional caveat that the client authenticates with a raw public key (its bootstrapping key) per {{!RFC7250}}. The bootstrapping key is always an elliptic curve public key, therefore the ClientCertTypeExtension SHALL always indicate RawPublicKey and the type of the client's Certificate SHALL be ECDSA and contain the client's bootstrapping key as a DER-encoded ASN.1 subjectPublicKeyInfo SEQUENCE.
+After successful negotiation of these extensions, the full TLS 1.3 handshake is performed with the additional caveat that the client authenticates with a raw public key (its BSK) per {{!RFC7250}}. The BSK is always an elliptic curve key pair, therefore the ClientCertTypeExtension SHALL always indicate RawPublicKey and the type of the client's Certificate SHALL be ECDSA and contain the client's BSK public key as a DER-encoded ASN.1 subjectPublicKeyInfo SEQUENCE.
 
-When the server processes the client's Certificate it MUST ensure that it is identical to the bootstrapping public key that it used to generate an external PSK and PSKIdentifier for this handshake. 
+When the server processes the client's Certificate it MUST ensure that it is identical to the BSK public key that it used to generate the EPSK and ImportedIdentity for this handshake. 
 
 When clients use the [duckling] form of authentication, they MAY forgo the checking of the server's certificate in the CertificateVerify and rely on the integrity of the bootstrapping method employed to distribute its key in order to validate trust in the authenticated TLS connection. 
 
@@ -139,15 +162,15 @@ The handshake is shown in Figure 1.
          Client                                            Server
          --------                                          --------
          ClientHello
-         + bskey_id
          + cert_with_extern_psk
          + client_cert_type=RawPublicKey
-         + key_share                -------->
+         + key_share
+         + pre_shared_key           -------->
                                                         ServerHello
-                                                         + bskey_id
                                              + cert_with_extern_psk
                                     + client_cert_type=RawPublicKey
                                                         + key_share
+                                                   + pre_shared_key
                                               {EncryptedExtensions}
                                                {CertificateRequest}
                                                       {Certificate}
@@ -200,13 +223,13 @@ This document captures all 4 areas.
 
 # IANA Considerations
 
-IANA will allocated an ExtensionPSKIdentityType for the bskey type from the TLS 1.3 repository created by [extensible-psks] and replace TBD in this document with that number.
+None.
 
 # Security Considerations 
 
 Bootstrap and trust establishment by the TLS server is based on proof of knowledge of the client's bootstrap public key, a non-public datum. The TLS server obtains proof that the client knows its bootstrap public key and, in addition, also possesses its corresponding private analog.
 
-Trust on the part of the client is based on validation of the server certificate and the TLS 1.3 handshake. In addition, the client assumes that knowledge of its public bootstrapping key is not widely disseminated and therefore any device that proves knowledge of it's bootstrapping key is the appropriate device from which to receive provisioning, for instance via {{?RFC7170}}. [duckling] describes a security model for this type of "imprinting".
+Trust on the part of the client is based on validation of the server certificate and the TLS 1.3 handshake. In addition, the client assumes that knowledge of its public bootstrapping key is not widely disseminated and therefore any device that proves knowledge of its bootstrapping key is the appropriate device from which to receive provisioning, for instance via {{?RFC7170}}. [duckling] describes a security model for this type of "imprinting".
 
 An attack on the bootstrapping method which substitutes the public key of a corrupted device for the public key of an honest device can result in the TLS sever on-boarding and trusting the corrupted device.
 

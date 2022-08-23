@@ -36,7 +36,7 @@ informative:
         ins: E. Rescorla
         name: Eric Rescorla
 
-    title: "The Ressurecting Ducking: Security Issues for Ad-Hoc Wireless Networks"
+    title: "The Ressurecting Duckling: Security Issues for Ad-Hoc Wireless Networks"
     date: 1999
 
 --- abstract

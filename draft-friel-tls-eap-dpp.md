@@ -159,7 +159,7 @@ The EPSK and ImportedIdentity are used in the TLS handshake as specified in {{!I
 
 A performance versus storage tradeoff a server can choose is to precompute the identity of every bootstrapped key with every hash algorithm that it uses in TLS and use that to quickly lookup the bootstrap key and generate the PSK. Servers that choose not to employ this optimization will have to do a runtime check with every bootstrap key it holds against the identity the client provides.
 
-## Changes to TLS 1.3 Handshake
+## TLS 1.3 Handshake Details
 
 The client includes the "tls_cert_with_extern_psk" extension in the ClientHello, per {{!RFC8773}}. The client identifies the BSK by inserting the serialized content of ImportedIdentity into the PskIdentity.identity in the PSK extension, per {{!I-D.ietf-tls-external-psk-importer}}. The server looks up the client's EPSK key in its database using the mechanisms documented in {{!I-D.ietf-tls-external-psk-importer}}.  If no match is found, the server SHALL terminate the TLS handshake with an alert.
 

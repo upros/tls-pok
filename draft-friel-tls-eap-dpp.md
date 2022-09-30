@@ -53,7 +53,7 @@ and network connectivity is needed to obtain a credential.  This poses a catch-2
 
 If a device has a public / private keypair, and trust in the integrity of a device's public key can be obtained in an out-of-band fashion, a device can be authenticated and provisioned with a usable credential for network access.  While this authentication can be strong, the device's authentication of the network is somewhat weaker.  [duckling] presents a functional security model to address this asymmetry.
 
-There are on-boarding protocols, such as [DPP], to address this use case but they have drawbacks. [DPP] for instance does not support wired network access.  This document describes an on-boarding protocol, which we refer to as TLS Proof of Knowledge or TLS-POK.
+There are on-boarding protocols, such as [DPP], to address this use case but they have drawbacks. [DPP] for instance does not support wired network access.  This document describes an on-boarding protocol that can be used for wired network access, which we refer to as TLS Proof of Knowledge or TLS-POK.
 
 ## Terminology
 

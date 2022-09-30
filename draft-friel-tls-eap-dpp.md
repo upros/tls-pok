@@ -216,11 +216,25 @@ Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP I
                             <- EAP-Request/
                             EAP-Type=TEAP
                            (TLS Start)
+
+    EAP-Response/
+    EAP-Type=TEAP
+    (TLS client_hello with
+     tls_cert_with_extern_psk
+     and pre_shared_key) ->
+     
                        .
                        .
                        .
 ~~~
 
+Both client and server have derived the EPSK and associated {{!I-D.ietf-tls-external-psk-importer}} ImportedIdentity from the BSK as described in {{external-psk-derivation}}. When the client starts the TLS exchange in the EAP transaction, it includes the ImportedIdentity structure in the pre_shared_key extension in the ClientHello. When the server received the ClientHello, it extracts the ImportedIdentity and looks up the EPSK and BSK public key. As previously mentioned in {{bootstrap-key-pair}}, the exact mechanism by which the server has gained knowledge of or been provisioned with the BSK public key is outside the scope of this document.
+
+The server continues with the TLS handshake and uses the EPSK to prove that it knows the BSK pubilc key. When the client replies with its Certificate, CertificateVerify and Finished messages, the server MUST ensure that the public key in the Certificate message matches the BSK public key.
+
+Once the TLS handshake completes, the client and server have established mutual trust. The server can then procees to provision a credential onto the client using, for exampkle, the mechanisms outlined in {{?RFC7170}}.
+
+The client can then use this provisioned credential for subsequent network authentication. The BSK is only used during bootstrap, and it not used for any subsequent network access.
 
 # Summary of Work
 

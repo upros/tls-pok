@@ -51,7 +51,7 @@ This document defines a TLS extension that enables a server to prove to a client
 On-boarding of devices with no, or limited, user interface can be difficult.  Typically, a credential is needed to access the network
 and network connectivity is needed to obtain a credential.  This poses a catch-22.
 
-If trust in the integrity of a device's public key can be obtained in an out-of-band fashion, a device can be authenticated and provisioned with a usable credential for network access.  While this authentication can be strong, the device's authentication of the network is somewhat weaker.  [duckling] presents a functional security model to address this asymmetry.
+If a device has a public / private keypair, and trust in the integrity of a device's public key can be obtained in an out-of-band fashion, a device can be authenticated and provisioned with a usable credential for network access.  While this authentication can be strong, the device's authentication of the network is somewhat weaker.  [duckling] presents a functional security model to address this asymmetry.
 
 There are on-boarding protocols, such as [DPP], to address this use case but they have drawbacks. [DPP] for instance does not support wired network access.  This document describes an on-boarding protocol, which we refer to as TLS Proof of Knowledge or TLS-POK.
 
@@ -59,13 +59,31 @@ There are on-boarding protocols, such as [DPP], to address this use case but the
 
 The following terminology is used throughout this document.
 
-- BSK: Bootstrap Key which is an elliptic curve public private key pair.
+- 802.1X:
+
+- BSK: Bootstrap Key which is an elliptic curve public private key pair
 
 - DPP: Device Provisioning Protocol
 
+- EAP:  Extensible Authentication Protocol {{?RFC3748}}
+
 - EPSK: External Pre-Shared Key
 
+- EST: Enrollment over Secure Transport {{?RFC7030}}
+
 - PSK: Pre-Shared Key
+
+- TEAP: Tunnel Extensible Authentication Protocol {{RFC7170}}
+
+## Bootstrapping Overview
+
+A device hold a public / private key pair which we refer to as a Bootstrap Key (BSK). The private key of the BSK is known only by the deivce. The public key of the BSK is know by the device, and is known by the owner or holder of the device, and is provisioned on the network by the network operator. In order to establish trust and mutually authenticate, the network proves to the device that it knows the public part of the BSK, and the device proves to the network that it knows the private part of the BSK. Once this trust has been established during bootstrap, the network can provision the device with a credential that it uses for subsequent network access.
+
+## EAP Network Access
+
+Enterprise deployments typically require an 802.1X/EAP-based authentication to obtain network access. Protocols like EST can be used to enroll devices into a Certification Authority to allow them to authenticate using 802.1X/EAP. But this creates a Catch-22 where a certificate is needed for network access and network access is needed to obtain certificate.
+
+Devices whose BSK public key can been obtained in an out-of-band fashion can perform an EAP-TLS-based exchange, for instance {{?RFC7170}}, and authenticate the TLS exchange using the bootstrapping extensions defined in {{bootstrapping-in-tls-13}}. This network connectivity can then be used to perform an enrollment protocol (such as provided by {{?RFC7170}}) to obtain a credential for subsequent network connectivity and certificate lifecycle maintenance.
 
 ## Bootstrap Key Pair
 
@@ -174,10 +192,6 @@ The handshake is shown in Figure 1.
                     Figure 1: TLS 1.3 TLS-POK Handshake
 
 # Using TLS Bootstrapping in EAP
-
-Enterprise deployments typically require an 802.1X/EAP-based authentication to obtain network access. Protocols like {{?RFC7030}} can be used to enroll devices into a Certification Authority to allow them to authenticate using 802.1X/EAP. But this creates a Catch-22 where a certificate is needed for network access and network access is needed to obtain certificate.
-
-Devices whose bootstrapping key can been obtained in an out-of-band fashion can perform an EAP-TLS-based exchange, for instance {{?RFC7170}}, and authenticate the TLS exchange using the bootstrapping extensions defined in {{bootstrapping-in-tls-13}}. This network connectivity can then be used to perform an enrollment protocol (such as provided by {{?RFC7170}}) to obtain a credential for subsequent network connectivity and certificate lifecycle maintenance.
 
 Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP Identify request to the newly connected peer. For unprovisioned devices that desire to take advantage of TLS-POK, there is no initial realm in which to construct an NAI (see {{?RFC4282}}) so the initial EAP Identity response SHOULD contain simply the name "TLS-POK" in order to indicate to the Authenticator that an EAP method that supports TLS-POK SHOULD be started.
 

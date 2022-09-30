@@ -86,7 +86,7 @@ The following terminology is used throughout this document.
 
 ## Bootstrapping Overview
 
-A bootstraping device holds a public / private key pair which we refer to as a Bootstrap Key (BSK). The private key of the BSK is known only by the deivce. The public key of the BSK is know by the device, is known by the owner or holder of the device, and is provisioned on the network by the network operator. In order to establish trust and mutually authenticate, the network proves to the device that it knows the public part of the BSK, and the device proves to the network that it knows the private part of the BSK. Once this trust has been established during bootstraping, the network can provision the device with a credential that it uses for subsequent network access. More details on the BSK are given in {{bootstrap-key-pair}}.
+A bootstraping device holds a public / private key pair which we refer to as a Bootstrap Key (BSK). The private key of the BSK is known only by the device. The public key of the BSK is know by the device, is known by the owner or holder of the device, and is provisioned on the network by the network operator. In order to establish trust and mutually authenticate, the network proves to the device that it knows the public part of the BSK, and the device proves to the network that it knows the private part of the BSK. Once this trust has been established during bootstraping, the network can provision the device with a credential that it uses for subsequent network access. More details on the BSK are given in {{bootstrap-key-pair}}.
 
 ## EAP Network Access
 

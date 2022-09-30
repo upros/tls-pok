@@ -41,7 +41,7 @@ informative:
 
 --- abstract
 
-This document defines a TLS extension that enables a server to prove to a client that it has knowledge of the public key of a key pair where the client has knowledge of the private key of the key pair. Unlike standard TLS key exchanges, the public key is never exchanged in TLS protocol messages. Proof of knowledge of the public key is used by the client to bootstrap trust in the server. The use case outlined in this document is to enable a bootstrapping client to establish trust in an EAP server.
+This document defines a mechanism that enables a bootstapping device to establish trust and mutually authenticate against a network. Boostrapping devices have a public private key pair, and this mechanism enables a network server to prove to the device that it knows the public key, and the device to prove to the server that it knows the private key. The mechanism leverages existing TLS standards and can be used in an EAP exchange.
 
 --- middle
 

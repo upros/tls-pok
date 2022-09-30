@@ -21,6 +21,15 @@ author:
     org: Hewlett-Packard Enterprise
     email: daniel.harkins@hpe.com
 informative:
+
+  IEEE802.1X:
+    author:
+      ins: IEEE
+      name: IEEE
+      org: IEEE 
+    title: Port-Based Network Access Control
+    date: 2010
+
   DPP:
     author:
       org: Wi-Fi Alliance
@@ -59,11 +68,11 @@ There are on-boarding protocols, such as [DPP], to address this use case but the
 
 The following terminology is used throughout this document.
 
-- 802.1X:
+- 802.1X: IEEE Port-Based Network Access Control
 
 - BSK: Bootstrap Key which is an elliptic curve public private key pair
 
-- DPP: Device Provisioning Protocol
+- DPP: Device Provisioning Protocol [DPP]
 
 - EAP:  Extensible Authentication Protocol {{?RFC3748}}
 
@@ -81,7 +90,7 @@ A bootstraping device holds a public / private key pair which we refer to as a B
 
 ## EAP Network Access
 
-Enterprise deployments typically require an 802.1X/EAP-based authentication to obtain network access. Protocols like EST can be used to enroll devices into a Certification Authority to allow them to authenticate using 802.1X/EAP. This creates a Catch-22 where a certificate is needed for network access and network access is needed to obtain certificate.
+Enterprise deployments typically require an [IEEE802.1X]/EAP-based authentication to obtain network access. Protocols like EST can be used to enroll devices into a Certification Authority to allow them to authenticate using 802.1X/EAP. This creates a Catch-22 where a certificate is needed for network access and network access is needed to obtain certificate.
 
 Devices whose BSK public key can been obtained in an out-of-band fashion and provisioned on the network can perform an EAP-TLS-based exchange, for instance {{?RFC7170}}, and authenticate the TLS exchange using the bootstrapping extensions defined in {{bootstrapping-in-tls-13}}. This network connectivity can then be used to perform an enrollment protocol (such as provided by {{?RFC7170}}) to obtain a credential for subsequent network connectivity and certificate lifecycle maintenance.
 

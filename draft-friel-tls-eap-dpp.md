@@ -86,7 +86,7 @@ The following terminology is used throughout this document.
 
 ## Bootstrapping Overview
 
-A bootstrapping device holds a public / private key pair which we refer to as a Bootstrap Key (BSK). The private key of the BSK is known only by the device. The public key of the BSK is know by the device, is known by the owner or holder of the device, and is provisioned on the network by the network operator. In order to establish trust and mutually authenticate, the network proves to the device that it knows the public part of the BSK, and the device proves to the network that it knows the private part of the BSK. Once this trust has been established during bootstrapping, the network can provision the device with a credential that it uses for subsequent network access. More details on the BSK are given in {{bootstrap-key-pair}}.
+A bootstrapping device holds a public / private key pair which we refer to as a Bootstrap Key (BSK). The private key of the BSK is known only by the device. The public key of the BSK is known by the device, is known by the owner or holder of the device, and is provisioned on the network by the network operator. In order to establish trust and mutually authenticate, the network proves to the device that it knows the public part of the BSK, and the device proves to the network that it knows the private part of the BSK. Once this trust has been established during bootstrapping, the network can provision the device with a credential that it uses for subsequent network access. More details on the BSK are given in {{bootstrap-key-pair}}.
 
 ## EAP Network Access
 
@@ -118,7 +118,7 @@ The TLS PSK handshake gives the client proof that the server knows the BSK publi
 
 ## External PSK Derivation
 
-An {{!I-D.ietf-tls-external-psk-importer}} EPSK is made of of the tuple of (Base Key, External Identity, Hash). The EPSK is derived from the BSK public key using {{!RFC5869}} with the hash algorithm from the ciphersuite:
+An {{!I-D.ietf-tls-external-psk-importer}} EPSK is made up of the tuple of (Base Key, External Identity, Hash). The EPSK is derived from the BSK public key using {{!RFC5869}} with the hash algorithm from the ciphersuite:
 
 ~~~
 epsk   = HKDF-Expand(HKDF-Extract(<>, bskey),

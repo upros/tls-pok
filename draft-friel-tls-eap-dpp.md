@@ -50,7 +50,7 @@ informative:
 
 --- abstract
 
-This document defines a mechanism that enables a bootstapping device to establish trust and mutually authenticate against a network. Boostrapping devices have a public private key pair, and this mechanism enables a network server to prove to the device that it knows the public key, and the device to prove to the server that it knows the private key. The mechanism leverages existing TLS standards and can be used in an EAP exchange.
+This document defines a mechanism that enables a bootstapping device to establish trust and mutually authenticate against a network. Boostrapping devices have a public private key pair, and this mechanism enables a network server to prove to the device that it knows the public key, and the device to prove to the server that it knows the private key. The mechanism leverages existing DPP and TLS standards and can be used in an EAP exchange.
 
 --- middle
 
@@ -62,7 +62,7 @@ and network connectivity is needed to obtain a credential.  This poses a catch-2
 
 If a device has a public / private keypair, and trust in the integrity of a device's public key can be obtained in an out-of-band fashion, a device can be authenticated and provisioned with a usable credential for network access.  While this authentication can be strong, the device's authentication of the network is somewhat weaker.  [duckling] presents a functional security model to address this asymmetry.
 
-There are on-boarding protocols, such as [DPP], to address this use case but they have drawbacks. [DPP] for instance does not support wired network access.  This document describes an on-boarding protocol that can be used for wired network access, which we refer to as TLS Proof of Knowledge or TLS-POK.
+Device on-boarding protocols such as the Device Provisioning Profile [DPP], also referred to as Wi-Fi Easy Connect, address this use case but they have drawbacks. [DPP] for instance does not support wired network access.  This document describes an on-boarding protocol that can be used for wired network access, which we refer to as TLS Proof of Knowledge or TLS-POK.
 
 ## Terminology
 
@@ -90,9 +90,9 @@ A bootstraping device holds a public / private key pair which we refer to as a B
 
 ## EAP Network Access
 
-Enterprise deployments typically require an [IEEE802.1X]/EAP-based authentication to obtain network access. Protocols like EST can be used to enroll devices into a Certification Authority to allow them to authenticate using 802.1X/EAP. This creates a Catch-22 where a certificate is needed for network access and network access is needed to obtain certificate.
+Enterprise deployments typically require an [IEEE802.1X]/EAP-based authentication to obtain network access. Protocols like Enrollment over Secure Transport (EST) {{?RFC7030}} can be used to enroll devices into a Certification Authority to allow them to authenticate using 802.1X/EAP. This creates a Catch-22 where a certificate is needed for network access and network access is needed to obtain certificate.
 
-Devices whose BSK public key can been obtained in an out-of-band fashion and provisioned on the network can perform an EAP-TLS-based exchange, for instance {{?RFC7170}}, and authenticate the TLS exchange using the bootstrapping extensions defined in {{bootstrapping-in-tls-13}}. This network connectivity can then be used to perform an enrollment protocol (such as provided by {{?RFC7170}}) to obtain a credential for subsequent network connectivity and certificate lifecycle maintenance.
+Devices whose BSK public key can been obtained in an out-of-band fashion and provisioned on the network can perform an EAP-TLS-based exchange, for instance Tunnel Extensible Authentication Protocol (TEAP) {{?RFC7170}}, and authenticate the TLS exchange using the bootstrapping extensions defined in {{bootstrapping-in-tls-13}}. This network connectivity can then be used to perform an enrollment protocol (such as provided by {{?RFC7170}}) to obtain a credential for subsequent network connectivity and certificate lifecycle maintenance.
 
 # Bootstrap Key Pair
 
@@ -102,11 +102,11 @@ The exact mechanism by which the server gains knowledge of the BSK public key is
 
 The server may have knowledge of multiple BSK public keys corresponding to multiple devices, and existing TLS mechanisms are leveraged that enable the server to identity a specific bootstrap public key corresponding to a specific device.
 
-Using the process defined herein, the client proves to the server that it has possession of the private analog to its public bootstrapping key. Provided that the mechanism in which the server obtained the BSK public key is trustworthy, a commensurate amount of authenticity of the resulting connection can be obtained. The server also proves that it knows the client's public key which, if the client does not gratuitously expose its public key, can be used to obtain a modicum of correctness, that the client is connecting to the correct network (see [duckling]).
+Using the process defined herein, the client proves to the server that it has possession of the private key of its BSK. Provided that the mechanism in which the server obtained the BSK public key is trustworthy, a commensurate amount of authenticity of the resulting connection can be obtained. The server also proves that it knows the client's BSK public key which, if the client does not gratuitously expose its public key, can be used to obtain a modicum of correctness, that the client is connecting to the correct network (see [duckling]).
 
 ## Alignment with Wi-Fi Alliance Device Provisioning Profile
 
-The definition of the BSK public key aligns with that given in [DPP]. This, for example, enables the QR code format as defined in [DPP] to be reused for TLS-POK. Therefore, a device that supports both wired LAN and Wi-Fi LAN connections can have a single QR code printed on its label, and the bootstrap key can be used for DPP if the device bootstraps against a Wi-Fi network, or TLS-POK if the device bootstraps against a wired network. Similarly, a common bootstrap public key format could be imported in a BOM into a server that handles devices connecting over both wired and Wi-Fi networks.
+The definition of the BSK public key aligns with that given in [DPP]. This, for example, enables the QR code format as defined in [DPP] to be reused for TLS-POK. Therefore, a device that supports both wired LAN and Wi-Fi LAN connections can have a single QR code printed on its label, or dymanically display a single QR code on a display, and the bootstrap key can be used for DPP if the device bootstraps against a Wi-Fi network, or TLS-POK if the device bootstraps against a wired network. Similarly, a common bootstrap public key format could be imported into a BOM into a server that handles devices connecting over both wired and Wi-Fi networks.
 
 Any bootstrapping method defined for, or used by, [DPP] is compatible with TLS-POK.
 
@@ -232,20 +232,9 @@ Both client and server have derived the EPSK and associated {{!I-D.ietf-tls-exte
 
 The server continues with the TLS handshake and uses the EPSK to prove that it knows the BSK pubilc key. When the client replies with its Certificate, CertificateVerify and Finished messages, the server MUST ensure that the public key in the Certificate message matches the BSK public key.
 
-Once the TLS handshake completes, the client and server have established mutual trust. The server can then procees to provision a credential onto the client using, for exampkle, the mechanisms outlined in {{?RFC7170}}.
+Once the TLS handshake completes, the client and server have established mutual trust. The server can then proceed to provision a credential onto the client using, for exampkle, the mechanisms outlined in {{?RFC7170}}.
 
 The client can then use this provisioned credential for subsequent network authentication. The BSK is only used during bootstrap, and it not used for any subsequent network access.
-
-# Summary of Work
-
-The protocol outlined here can be broadly broken up into 4 distinct areas:
-
-- TLS extensions to transport the bootstrap public key identifier
-- Use of the TLS 1.3 extension for certificate-based authentication with an external PSK
-- The client's use of a raw public key in its certificate
-- TEAP extensions to leverage the new TLS-POK handshake for trust establishment
-
-This document captures all 4 areas.
 
 # IANA Considerations
 
@@ -253,11 +242,10 @@ None.
 
 # Security Considerations 
 
-Bootstrap and trust establishment by the TLS server is based on proof of knowledge of the client's bootstrap public key, a non-public datum. The TLS server obtains proof that the client knows its bootstrap public key and, in addition, also possesses its corresponding private analog.
+Bootstrap and trust establishment by the TLS server is based on proof of knowledge of the client's bootstrap public key, a non-public datum. The TLS server obtains proof that the client knows its bootstrap public key and, in addition, also possesses its corresponding private key.
 
-Trust on the part of the client is based on validation of the server certificate and the TLS 1.3 handshake. In addition, the client assumes that knowledge of its public bootstrapping key is not widely disseminated and therefore any device that proves knowledge of its bootstrapping key is the appropriate device from which to receive provisioning, for instance via {{?RFC7170}}. [duckling] describes a security model for this type of "imprinting".
+Trust on the part of the client is based on successful completion of the TLS 1.3 handshake using the EPSK derived from the BSK. This proved to the client that the server knows its BSK public key. In addition, the client assumes that knowledge of its BSK public key is not widely disseminated and therefore any server that proves knowledge of its BSK public key is the appropriate server from which to receive provisioning, for instance via {{?RFC7170}}. [duckling] describes a security model for this type of "imprinting".
 
 An attack on the bootstrapping method which substitutes the public key of a corrupted device for the public key of an honest device can result in the TLS sever on-boarding and trusting the corrupted device.
 
 If an adversary has knowledge of the bootstrap public key, the adversary may be able to make the client bootstrap against the adversary's network. For example, if an adversary intercepts and scans QR labels on clients, and the adversary can force the client to connect to its server, then the adversary can complete the TLS-POK handshake with the client and the client will connect to the adversary's server. Since physical possession implies ownership, there is nothing to prevent a stolen device from being on-boarded. 
-

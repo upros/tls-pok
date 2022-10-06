@@ -50,7 +50,7 @@ informative:
 
 --- abstract
 
-This document defines a mechanism that enables a bootstapping device to establish trust and mutually authenticate against a network. Boostrapping devices have a public private key pair, and this mechanism enables a network server to prove to the device that it knows the public key, and the device to prove to the server that it knows the private key. The mechanism leverages existing DPP and TLS standards and can be used in an EAP exchange.
+This document defines a mechanism that enables a bootstrapping device to establish trust and mutually authenticate against a network. Bootstrapping devices have a public private key pair, and this mechanism enables a network server to prove to the device that it knows the public key, and the device to prove to the server that it knows the private key. The mechanism leverages existing DPP and TLS standards and can be used in an EAP exchange.
 
 --- middle
 
@@ -86,7 +86,7 @@ The following terminology is used throughout this document.
 
 ## Bootstrapping Overview
 
-A bootstraping device holds a public / private key pair which we refer to as a Bootstrap Key (BSK). The private key of the BSK is known only by the device. The public key of the BSK is know by the device, is known by the owner or holder of the device, and is provisioned on the network by the network operator. In order to establish trust and mutually authenticate, the network proves to the device that it knows the public part of the BSK, and the device proves to the network that it knows the private part of the BSK. Once this trust has been established during bootstraping, the network can provision the device with a credential that it uses for subsequent network access. More details on the BSK are given in {{bootstrap-key-pair}}.
+A bootstrapping device holds a public / private key pair which we refer to as a Bootstrap Key (BSK). The private key of the BSK is known only by the device. The public key of the BSK is know by the device, is known by the owner or holder of the device, and is provisioned on the network by the network operator. In order to establish trust and mutually authenticate, the network proves to the device that it knows the public part of the BSK, and the device proves to the network that it knows the private part of the BSK. Once this trust has been established during bootstrapping, the network can provision the device with a credential that it uses for subsequent network access. More details on the BSK are given in {{bootstrap-key-pair}}.
 
 ## EAP Network Access
 
@@ -106,7 +106,7 @@ Using the process defined herein, the client proves to the server that it has po
 
 ## Alignment with Wi-Fi Alliance Device Provisioning Profile
 
-The definition of the BSK public key aligns with that given in [DPP]. This, for example, enables the QR code format as defined in [DPP] to be reused for TLS-POK. Therefore, a device that supports both wired LAN and Wi-Fi LAN connections can have a single QR code printed on its label, or dymanically display a single QR code on a display, and the bootstrap key can be used for DPP if the device bootstraps against a Wi-Fi network, or TLS-POK if the device bootstraps against a wired network. Similarly, a common bootstrap public key format could be imported into a BOM into a server that handles devices connecting over both wired and Wi-Fi networks.
+The definition of the BSK public key aligns with that given in [DPP]. This, for example, enables the QR code format as defined in [DPP] to be reused for TLS-POK. Therefore, a device that supports both wired LAN and Wi-Fi LAN connections can have a single QR code printed on its label, or dynamically display a single QR code on a display, and the bootstrap key can be used for DPP if the device bootstraps against a Wi-Fi network, or TLS-POK if the device bootstraps against a wired network. Similarly, a common bootstrap public key format could be imported into a BOM into a server that handles devices connecting over both wired and Wi-Fi networks.
 
 Any bootstrapping method defined for, or used by, [DPP] is compatible with TLS-POK.
 
@@ -230,9 +230,9 @@ Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP I
 
 Both client and server have derived the EPSK and associated {{!I-D.ietf-tls-external-psk-importer}} ImportedIdentity from the BSK as described in {{external-psk-derivation}}. When the client starts the TLS exchange in the EAP transaction, it includes the ImportedIdentity structure in the pre_shared_key extension in the ClientHello. When the server received the ClientHello, it extracts the ImportedIdentity and looks up the EPSK and BSK public key. As previously mentioned in {{bootstrap-key-pair}}, the exact mechanism by which the server has gained knowledge of or been provisioned with the BSK public key is outside the scope of this document.
 
-The server continues with the TLS handshake and uses the EPSK to prove that it knows the BSK pubilc key. When the client replies with its Certificate, CertificateVerify and Finished messages, the server MUST ensure that the public key in the Certificate message matches the BSK public key.
+The server continues with the TLS handshake and uses the EPSK to prove that it knows the BSK public key. When the client replies with its Certificate, CertificateVerify and Finished messages, the server MUST ensure that the public key in the Certificate message matches the BSK public key.
 
-Once the TLS handshake completes, the client and server have established mutual trust. The server can then proceed to provision a credential onto the client using, for exampkle, the mechanisms outlined in {{?RFC7170}}.
+Once the TLS handshake completes, the client and server have established mutual trust. The server can then proceed to provision a credential onto the client using, for example, the mechanisms outlined in {{?RFC7170}}.
 
 The client can then use this provisioned credential for subsequent network authentication. The BSK is only used during bootstrap, and it not used for any subsequent network access.
 

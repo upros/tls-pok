@@ -2,7 +2,7 @@
 
 title: "Bootstrapped TLS Authentication"
 abbrev: TLS-POK
-docname: draft-ietf-emu-bootstrapped-tls-00
+docname: draft-ietf-emu-bootstrapped-tls-01
 category: std
 ipr: trust200902
 
@@ -204,7 +204,7 @@ The handshake is shown in Figure 1.
 
 # Using TLS Bootstrapping in EAP
 
-Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP Identity request to the newly connected peer. For unprovisioned devices that desire to take advantage of TLS-POK, there is no initial realm in which to construct an NAI (see {{?RFC4282}}) so the initial EAP Identity response SHOULD contain simply the name "TLS-POK" in order to indicate to the Authenticator that an EAP method that supports TLS-POK SHOULD be started.
+Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP Identity request to the newly connected peer. For unprovisioned devices that desire to take advantage of TLS-POK, there is no initial realm in which to construct an NAI (see {{?RFC4282}}) so the initial EAP Identity response SHOULD contain simply the name "tls-pok@eap-dpp.arpa" in order to indicate to the Authenticator that an EAP method that supports TLS-POK SHOULD be started.
 
 ~~~
    Authenticating Peer     Authenticator
@@ -213,7 +213,8 @@ Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP I
                             Identity
 
     EAP-Response/
-    Identity (TLS-POK) ->
+    Identity
+    (tls-pok@eap-dpp.arpa) ->
 
                             <- EAP-Request/
                             EAP-Type=TEAP
@@ -240,7 +241,9 @@ The client can then use this provisioned credential for subsequent network authe
 
 # IANA Considerations
 
-None.
+This document registers the following arpa domain:
+
+eap-dpp.arpa
 
 # Security Considerations 
 

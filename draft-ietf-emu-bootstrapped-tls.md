@@ -112,13 +112,13 @@ Any bootstrapping method defined for, or used by, [DPP] is compatible with TLS-P
 
 # Bootstrapping in TLS 1.3
 
-Bootstrapping in TLS 1.3 leverages Certificate-Based Authentication with an External Pre-Shared Key {{!RFC8773}}. The External PSK (EPSK) is derived from the BSK public key, and the EPSK is imported using {{!RFC9528}}. This BSK MUST be from a cryptosystem suitable for doing ECDSA.
+Bootstrapping in TLS 1.3 leverages Certificate-Based Authentication with an External Pre-Shared Key {{!RFC8773}}. The External PSK (EPSK) is derived from the BSK public key, and the EPSK is imported using {{!RFC9258}}. This BSK MUST be from a cryptosystem suitable for doing ECDSA.
 
 The TLS PSK handshake gives the client proof that the server knows the BSK public key. Certificate based authentication of the client by the server is carried out using the BSK, giving the server proof that the client knows the BSK private key. This satisfies the proof of ownership requirements outlined in {{introduction}}.
 
 ## External PSK Derivation
 
-An {{RFC9528}} EPSK is made up of the tuple of (Base Key, External Identity, Hash). The EPSK is derived from the BSK public key using {{!RFC5869}} with the hash algorithm from the ciphersuite:
+An {{RFC9258}} EPSK is made up of the tuple of (Base Key, External Identity, Hash). The EPSK is derived from the BSK public key using {{!RFC5869}} with the hash algorithm from the ciphersuite:
 
 ~~~
 epsk   = HKDF-Expand(HKDF-Extract(<>, bskey),
@@ -135,7 +135,7 @@ where:
     algorithm 
 ~~~
 
-The {{!RFC9528}} ImportedIdentity structure is defined as:
+The {{!RFC9258}} ImportedIdentity structure is defined as:
 
 ~~~
 struct {
@@ -155,13 +155,13 @@ target_protocol = TLS1.3(0x0304)
 target_kdf = HKDF_SHA256(0x0001)
 ~~~
 
-The EPSK and ImportedIdentity are used in the TLS handshake as specified in {{!RFC9528}}.
+The EPSK and ImportedIdentity are used in the TLS handshake as specified in {{!RFC9258}}.
 
 A performance versus storage tradeoff a server can choose is to precompute the identity of every bootstrapped key with every hash algorithm that it uses in TLS and use that to quickly lookup the bootstrap key and generate the PSK. Servers that choose not to employ this optimization will have to do a runtime check with every bootstrap key it holds against the identity the client provides.
 
 ## TLS 1.3 Handshake Details
 
-The client includes the "tls_cert_with_extern_psk" extension in the ClientHello, per {{!RFC8773}}. The client identifies the BSK by inserting the serialized content of ImportedIdentity into the PskIdentity.identity in the PSK extension, per {{!RFC9528}}. The server looks up the client's EPSK key in its database using the mechanisms documented in {{!RFC9528}}.  If no match is found, the server SHALL terminate the TLS handshake with an alert.
+The client includes the "tls_cert_with_extern_psk" extension in the ClientHello, per {{!RFC8773}}. The client identifies the BSK by inserting the serialized content of ImportedIdentity into the PskIdentity.identity in the PSK extension, per {{!RFC9258}}. The server looks up the client's EPSK key in its database using the mechanisms documented in {{!RFC9258}}.  If no match is found, the server SHALL terminate the TLS handshake with an alert.
 
 If the server found the matching BSK, it includes the "tls_cert_with_extern_psk" extension in the ServerHello message, and the corresponding EPSK identity in the "pre_shared_key" extension. When these extensions have been successfully negotiated, the TLS 1.3 key schedule SHALL include both the EPSK in the Early Secret derivation and an (EC)DHE shared secret value in the Handshake Secret derivation. 
 
@@ -231,7 +231,7 @@ Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP I
                        .
 ~~~
 
-Both client and server have derived the EPSK and associated {{!RFC9528}} ImportedIdentity from the BSK as described in {{external-psk-derivation}}. When the client starts the TLS exchange in the EAP transaction, it includes the ImportedIdentity structure in the pre_shared_key extension in the ClientHello. When the server received the ClientHello, it extracts the ImportedIdentity and looks up the EPSK and BSK public key. As previously mentioned in {{bootstrap-key-pair}}, the exact mechanism by which the server has gained knowledge of or been provisioned with the BSK public key is outside the scope of this document.
+Both client and server have derived the EPSK and associated {{!RFC9258}} ImportedIdentity from the BSK as described in {{external-psk-derivation}}. When the client starts the TLS exchange in the EAP transaction, it includes the ImportedIdentity structure in the pre_shared_key extension in the ClientHello. When the server received the ClientHello, it extracts the ImportedIdentity and looks up the EPSK and BSK public key. As previously mentioned in {{bootstrap-key-pair}}, the exact mechanism by which the server has gained knowledge of or been provisioned with the BSK public key is outside the scope of this document.
 
 The server continues with the TLS handshake and uses the EPSK to prove that it knows the BSK public key. When the client replies with its Certificate, CertificateVerify and Finished messages, the server MUST ensure that the public key in the Certificate message matches the BSK public key.
 

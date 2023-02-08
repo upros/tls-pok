@@ -57,14 +57,14 @@ This document defines a mechanism that enables a bootstrapping device to establi
 
 # Introduction
 
-On-boarding of devices with no, or limited, user interface can be difficult.  Typically, a credential is needed to access the network
+On-boarding of devices with no, or limited, user interface can be difficult.  Typically, a credential is needed to access the network,
 and network connectivity is needed to obtain a credential.  This poses a catch-22.
 
 If a device has a public / private keypair, and trust in the integrity of a device's public key can be obtained in an out-of-band fashion, a device can be authenticated and provisioned with a usable credential for network access.  While this authentication can be strong, the device's authentication of the network is somewhat weaker.  [duckling] presents a functional security model to address this asymmetry.
 
 Device on-boarding protocols such as the Device Provisioning Profile [DPP], also referred to as Wi-Fi Easy Connect, address this use case but they have drawbacks. [DPP] for instance does not support wired network access, and does not specify how the device's DPP keypair can be used in a TLS handshake.  This document describes an on-boarding protocol that can be used for wired network access, which we refer to as TLS Proof of Knowledge or TLS-POK.
 
-This document does not address the problem of Wi-Fi network discovery, where a bootstrapping device detects multiple different Wi-Fi networks and needs a more robust and scalable mechansim than simple round-robin to determine the correct network to attach to. DPP addresses this issue. Thus, the inention is that DPP is the recommended mechanism for bootstrapping against Wi-Fi networks, and TLS-POK is the recommented mechanism for bootstrapping against wired networks.
+This document does not address the problem of Wi-Fi network discovery, where a bootstrapping device detects multiple different Wi-Fi networks and needs a more robust and scalable mechanism than simple round-robin to determine the correct network to attach to. DPP addresses this issue. Thus, the intention is that DPP is the recommended mechanism for bootstrapping against Wi-Fi networks, and TLS-POK is the recommended mechanism for bootstrapping against wired networks.
 
 ## Terminology
 
@@ -96,7 +96,7 @@ A bootstrapping device holds a public / private key pair which we refer to as a 
 
 Enterprise deployments typically require an [IEEE802.1X]/EAP-based authentication to obtain network access. Protocols like Enrollment over Secure Transport (EST) {{?RFC7030}} can be used to enroll devices into a Certification Authority to allow them to authenticate using 802.1X/EAP. This creates a Catch-22 where a certificate is needed for network access and network access is needed to obtain certificate.
 
-Devices whose BSK public key can been obtained in an out-of-band fashion and provisioned on the network can perform an EAP-TLS-based exchange, for instance Tunnel Extensible Authentication Protocol (TEAP) {{?RFC7170}}, and authenticate the TLS exchange using the bootstrapping extensions defined in {{bootstrapping-in-tls-13}}. This network connectivity can then be used to perform an enrollment protocol (such as provided by {{?RFC7170}}) to obtain a credential for subsequent network connectivity and certificate lifecycle maintenance.
+Devices whose BSK public key can been obtained in an out-of-band fashion and provisioned on the network can perform an EAP-TLS-based exchange, for instance Tunnel Extensible Authentication Protocol (TEAP) {{?RFC7170}}, and authenticate the TLS exchange using the bootstrapping mechanisms defined in {{bootstrapping-in-tls-13}}. This network connectivity can then be used to perform an enrollment protocol (such as provided by {{?RFC7170}}) to obtain a credential for subsequent network connectivity and certificate lifecycle maintenance.
 
 # Bootstrap Key Pair
 
@@ -165,11 +165,11 @@ A performance versus storage tradeoff a server can choose is to precompute the i
 
 ## TLS 1.3 Handshake Details
 
-The client includes the "tls_cert_with_extern_psk" extension in the ClientHello, per {{!RFC8773}}. The client identifies the BSK by inserting the serialized content of ImportedIdentity into the PskIdentity.identity in the PSK extension, per {{!RFC9258}}. The server looks up the client's EPSK key in its database using the mechanisms documented in {{!RFC9258}}.  If no match is found, the server SHALL terminate the TLS handshake with an alert.
+The client includes the "tls_cert_with_extern_psk" extension in the ClientHello, per {{!RFC8773}}. The client identifies the BSK by inserting the serialized content of ImportedIdentity into the PskIdentity.identity in the PSK extension, per {{!RFC9258}}. The server looks up the client's EPSK key in its database using the mechanisms documented in {{!RFC9258}}.  If no match is found, the server MUST terminate the TLS handshake with an alert.
 
-If the server found the matching BSK, it includes the "tls_cert_with_extern_psk" extension in the ServerHello message, and the corresponding EPSK identity in the "pre_shared_key" extension. When these extensions have been successfully negotiated, the TLS 1.3 key schedule SHALL include both the EPSK in the Early Secret derivation and an (EC)DHE shared secret value in the Handshake Secret derivation. 
+If the server found the matching BSK, it includes the "tls_cert_with_extern_psk" extension in the ServerHello message, and the corresponding EPSK identity in the "pre_shared_key" extension. When these extensions have been successfully negotiated, the TLS 1.3 key schedule MUST include both the EPSK in the Early Secret derivation and an (EC)DHE shared secret value in the Handshake Secret derivation. 
 
-After successful negotiation of these extensions, the full TLS 1.3 handshake is performed with the additional caveat that the client authenticates with a raw public key (its BSK) per {{!RFC7250}}. The BSK is always an elliptic curve key pair, therefore the ClientCertTypeExtension SHALL always indicate RawPublicKey and the type of the client's Certificate SHALL be ECDSA and contain the client's BSK public key as a DER-encoded ASN.1 subjectPublicKeyInfo SEQUENCE.
+After successful negotiation of these extensions, the full TLS 1.3 handshake is performed with the additional caveat that the client authenticates with a raw public key (its BSK) per {{!RFC7250}}. The BSK is always an elliptic curve key pair, therefore the ClientCertTypeExtension MUST always indicate RawPublicKey and the type of the client's Certificate MUST be ECDSA and contain the client's BSK public key as a DER-encoded ASN.1 subjectPublicKeyInfo SEQUENCE.
 
 Note that the client does not share its BSK public key with the server until after the client has completed processing of the ServerHello and verified the TLS key schedule. The PSK proof has completed at this stage, and the server has proven to the client that is knows the BSK public key, and it is therefore safe for the client to send the BSK public key to the server in the Certificate message. If the PSK verification step fails when processing the ServerHello, the client terminates the TLS handshake and the BSK public key is not shared with the server.
 

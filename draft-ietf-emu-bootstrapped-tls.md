@@ -125,12 +125,12 @@ The TLS PSK handshake gives the client proof that the server knows the BSK publi
 An {{RFC9258}} EPSK is made up of the tuple of (Base Key, External Identity, Hash). The Base Key is the DER-encoded ASN.1 subjectPublicKeyInfo representation of the BSK public key. The External Identity is derived from the BSK public key using {{!RFC5869}} with the hash algorithm from the ciphersuite as follows:
 
 ~~~
-epskid = HKDF-Expand(HKDF-Extract(<>, bskey),
+epskid = HKDF-Expand(HKDF-Extract(<>, bsk-pk),
                        "tls13-bspsk-identity", L)
 where:
   - epskid is the EPSK External Identity
   - <> is a NULL salt 
-  - bskey is the DER-encoded ASN.1 subjectPublicKeyInfo
+  - bsk-pk is the DER-encoded ASN.1 subjectPublicKeyInfo
     representation of the BSK public key
   - L is the length of the digest of the underlying hash
     algorithm 

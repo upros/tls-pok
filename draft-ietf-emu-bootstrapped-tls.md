@@ -81,7 +81,7 @@ The following terminology is used throughout this document.
 - EAP:  Extensible Authentication Protocol {{?RFC3748}}
 
 - EC:  Elliptic Curve
-- 
+
 - ECDSA: Elliptic Curve Digital Signature Algorithm
 
 - EPSK: External Pre-Shared Key

@@ -126,7 +126,7 @@ The TLS PSK handshake gives the client proof that the server knows the BSK publi
 
 ## External PSK Derivation
 
-The {{RFC9258}} EPSK MUST be erived from the BSK public key before using the PSK importer interface defined in {{RFC9258}}. An {{RFC9258}} EPSK is made up of the tuple of (Base Key, External Identity, Hash). The EPSK is derived from the BSK public key using {{!RFC5869}} with the hash algorithm from the ciphersuite:
+The {{RFC9258}} EPSK MUST be derived from the BSK public key before using the PSK importer interface defined in {{RFC9258}}. An {{RFC9258}} EPSK is made up of the tuple of (Base Key, External Identity, Hash). The EPSK is derived from the BSK public key using {{!RFC5869}} with the hash algorithm from the ciphersuite:
 
 ~~~
 epsk   = HKDF-Expand(HKDF-Extract(<>, bskey),

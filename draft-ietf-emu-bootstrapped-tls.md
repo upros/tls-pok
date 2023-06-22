@@ -2,7 +2,7 @@
 
 title: "Bootstrapped TLS Authentication with Proof of Knowledge (TLS-POK)"
 abbrev: TLS-POK
-docname: draft-ietf-emu-bootstrapped-tls-01
+docname: draft-ietf-emu-bootstrapped-tls-latest
 category: std
 ipr: trust200902
 
@@ -126,7 +126,7 @@ The TLS PSK handshake gives the client proof that the server knows the BSK publi
 
 ## External PSK Derivation
 
-An {{RFC9258}} EPSK is made up of the tuple of (Base Key, External Identity, Hash). The Base Key is the DER-encoded ASN.1 subjectPublicKeyInfo representation of the BSK public key. The External Identity is derived from the BSK public key using {{!RFC5869}} with the hash algorithm from the ciphersuite as follows:
+An {{RFC9258}} EPSK is made up of the tuple of (Base Key, External Identity, Hash). The Base Key is the DER-encoded ASN.1 subjectPublicKeyInfo representation of the BSK public key. The External Identity is derived from the BSK public key using {{?RFC5869}} with the hash algorithm from the ciphersuite as follows:
 
 ~~~
 epskid = HKDF-Expand(HKDF-Extract(<>, Base Key),
@@ -209,7 +209,7 @@ The handshake is shown in Figure 1.
 
 # Using TLS Bootstrapping in EAP
 
-Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP Identity request to the newly connected peer. For unprovisioned devices that desire to take advantage of TLS-POK, there is no initial realm in which to construct an NAI (see {{?RFC4282}}) so the initial EAP Identity response SHOULD contain simply the name "tls-pok@eap-dpp.arpa" in order to indicate to the Authenticator that an EAP method that supports TLS-POK SHOULD be started.
+Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP Identity request to the newly connected peer. For unprovisioned devices that desire to take advantage of TLS-POK, there is no initial realm in which to construct an NAI (see {{?RFC7542}}) so the initial EAP Identity response SHOULD contain simply the name "tls-pok@eap-dpp.arpa" in order to indicate to the Authenticator that an EAP method that supports TLS-POK SHOULD be started.
 
 ~~~
    Authenticating Peer     Authenticator

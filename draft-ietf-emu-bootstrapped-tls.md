@@ -236,7 +236,7 @@ Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP I
                        .
 ~~~
 
-Both client and server have derived the EPSK and associated {{!RFC9258}} ImportedIdentity from the BSK public key as described in {{external-psk-derivation}}. When the client starts the TLS exchange in the EAP transaction, it includes the ImportedIdentity structure in the pre_shared_key extension in the ClientHello. When the server received the ClientHello, it extracts the ImportedIdentity and looks up the EPSK and BSK public key. As previously mentioned in {{bootstrap-key-pair}}, the exact mechanism by which the server has gained knowledge of or been provisioned with the BSK public key is outside the scope of this document.
+Both client and server have derived the EPSK and associated {{!RFC9258}} ImportedIdentity from the BSK public key as described in {{external-psk-derivation}}. When the client starts the TLS exchange in the EAP transaction, it includes the ImportedIdentity structure in the pre_shared_key extension in the ClientHello. When the server received the ClientHello, it extracts the ImportedIdentity and looks up the EPSK and BSK public key. As previously mentioned in {{bootstrap-key}}, the exact mechanism by which the server has gained knowledge of or been provisioned with the BSK public key is outside the scope of this document.
 
 The server continues with the TLS handshake and uses the EPSK to prove that it knows the BSK public key. When the client replies with its Certificate, CertificateVerify and Finished messages, the server MUST ensure that the public key in the Certificate message matches the BSK public key.
 

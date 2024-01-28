@@ -120,7 +120,7 @@ Any bootstrapping method defined for, or used by, [DPP] is compatible with TLS-P
 
 # Bootstrapping in TLS 1.3
 
-Bootstrapping in TLS 1.3 leverages {{!RFC8773}} Certificate-Based Authentication with an External Pre-Shared Key. The External PSK (EPSK) is derived from the BSK public key as described in {{external-psk-derivation}}, and the EPSK is imported using {{!RFC9258}} Importing External Pre-Shared Keys (PSKs) for TLS 1.3. As the BSK public key is an ASN.1 SEQUENCE SubjectPublicKeyInfo, the client presents a raw public key certificate as specified in {{!RFC7250}} Using Raw Public Keys in TLS and DTLS.
+Bootstrapping in TLS 1.3 leverages {{!I-D.ietf-tls-8773bis}} Certificate-Based Authentication with an External Pre-Shared Key. The External PSK (EPSK) is derived from the BSK public key as described in {{external-psk-derivation}}, and the EPSK is imported using {{!RFC9258}} Importing External Pre-Shared Keys (PSKs) for TLS 1.3. As the BSK public key is an ASN.1 SEQUENCE SubjectPublicKeyInfo, the client presents a raw public key certificate as specified in {{!RFC7250}} Using Raw Public Keys in TLS and DTLS.
 
 The TLS PSK handshake gives the client proof that the server knows the BSK public key. Certificate based authentication of the client to the server using the BSK gives the server proof that the client knows the BSK private key. This satisfies the proof of ownership requirements outlined in {{introduction}}.
 
@@ -166,7 +166,7 @@ A performance versus storage tradeoff a server can choose is to precompute the i
 
 ## TLS 1.3 Handshake Details
 
-The client includes the "tls_cert_with_extern_psk" extension in the ClientHello, per {{!RFC8773}}. The client identifies the BSK public key by inserting the serialized content of ImportedIdentity into the PskIdentity.identity in the PSK extension, per {{!RFC9258}}. The client MUST also include the {{!RFC7250}} "client_certificate_type" extension in the ClientHello and MUST specify type of RawPublicKey.
+The client includes the "tls_cert_with_extern_psk" extension in the ClientHello, per {{!I-D.ietf-tls-8773bis}}. The client identifies the BSK public key by inserting the serialized content of ImportedIdentity into the PskIdentity.identity in the PSK extension, per {{!RFC9258}}. The client MUST also include the {{!RFC7250}} "client_certificate_type" extension in the ClientHello and MUST specify type of RawPublicKey.
 
 Upon receipt of the ClientHello, the server looks up the client's EPSK key in its database using the mechanisms documented in {{!RFC9258}}. If no match is found, the server MUST terminate the TLS handshake with an alert. If the server found the matching BSK public key, it includes the "tls_cert_with_extern_psk" extension in the ServerHello message, and the corresponding EPSK identity in the "pre_shared_key" extension. When these extensions have been successfully negotiated, the TLS 1.3 key schedule MUST include both the EPSK in the Early Secret derivation and an (EC)DHE shared secret value in the Handshake Secret derivation. 
 

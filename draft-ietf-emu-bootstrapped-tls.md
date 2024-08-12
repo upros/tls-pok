@@ -219,7 +219,7 @@ Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP I
 
     EAP-Response/
     Identity
-    (@tls-pok-dpp.eap.arpa) ->
+    (anonymous@tls-pok-dpp.eap.arpa) ->
 
                             <- EAP-Request/
                             EAP-Type=TEAP

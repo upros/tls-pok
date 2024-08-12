@@ -209,7 +209,7 @@ The handshake is shown in Figure 1.
 
 # Using TLS Bootstrapping in EAP
 
-Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP Identity request to the newly connected peer. For unprovisioned devices that desire to take advantage of TLS-POK, there is no initial realm in which to construct an NAI (see {{?RFC7542}}). This document uses the NAI mechanisms defined in {{!I-D.ietf-emu-eap-arpa}} and defines the username field "tls-pok-dpp" that is prepended to the EAP realm "tls-pok-dpp.eap.arpa" yielding an initial identity of "tls-pok-dpp@tls-pok-dpp.eap.arpa". This identifier SHOULD be included in the EAP Identity response in order to indicate to the Authenticator that an EAP method that supports TLS-POK SHOULD be started.
+Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP Identity request to the newly connected peer. For unprovisioned devices that desire to take advantage of TLS-POK, there is no initial realm in which to construct an NAI (see {{?RFC7542}}). This document uses the NAI mechanisms defined in {{!I-D.ietf-emu-eap-arpa}} and defines the EAP realm "tls-pok-dpp.eap.arpa". No username is necessary yielding an initial identity of "@tls-pok-dpp.eap.arpa". This identifier SHOULD be included in the EAP Identity response in order to indicate to the Authenticator that an EAP method that supports TLS-POK SHOULD be started.
 
 ~~~
    Authenticating Peer     Authenticator
@@ -219,7 +219,7 @@ Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP I
 
     EAP-Response/
     Identity
-    (tls-pok-dpp@tls-pok-dpp.eap.arpa) ->
+    (@tls-pok-dpp.eap.arpa) ->
 
                             <- EAP-Request/
                             EAP-Type=TEAP
@@ -252,7 +252,7 @@ None.
 
 Bootstrap and trust establishment by the TLS server is based on proof of knowledge of the client's bootstrap public key, a non-public datum. The TLS server obtains proof that the client knows its bootstrap public key and, in addition, also possesses its corresponding private key.
 
-Trust on the part of the client is based on successful completion of the TLS 1.3 handshake using the EPSK derived from the BSK. This proves to the client that the server knows its BSK public key. In addition, the client assumes that knowledge of its BSK public key is not widely disseminated and therefore any server that proves knowledge of its BSK public key is the appropriate server from which to receive provisioning, for instance via {{?RFC7170}}. [duckling] describes a security model for this type of "imprinting".
+Trust on the part of the client is based on successful completion of the TLS 1.3 handshake using the EPSK derived from the BSK. This proves to the client that the server knows its BSK public key. In addition, the client assumes that knowledge of its BSK public key is not widely disseminated and therefore any server that proves knowledge of its BSK public key is the appropriate server from which to receive provisioning, for instance via {{?RFC7170}}. [duckling] describes a security model for this type of "imprinting"
 
 An attack on the bootstrapping method which substitutes the public key of a corrupted device for the public key of an honest device can result in the TLS sever on-boarding and trusting the corrupted device.
 

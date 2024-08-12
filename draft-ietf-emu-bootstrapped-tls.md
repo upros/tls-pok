@@ -209,7 +209,7 @@ The handshake is shown in Figure 1.
 
 # Using TLS Bootstrapping in EAP
 
-Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP Identity request to the newly connected peer. For unprovisioned devices that desire to take advantage of TLS-POK, there is no initial realm in which to construct an NAI (see {{?RFC7542}}). This document uses the NAI mechanisms defined in {{!I-D.ietf-emu-eap-arpa}} and defines the EAP realm "tls-pok-dpp.eap.arpa". No username is necessary yielding an initial identity of "@tls-pok-dpp.eap.arpa". This identifier SHOULD be included in the EAP Identity response in order to indicate to the Authenticator that an EAP method that supports TLS-POK SHOULD be started.
+Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP Identity request to the newly connected peer. For unprovisioned devices that desire to take advantage of TLS-POK, there is no initial realm in which to construct an NAI (see {{?RFC7542}}). This document uses the NAI mechanisms defined in {{!I-D.ietf-emu-eap-arpa}} and defines the EAP realm "tls-pok-dpp.eap.arpa". The username "anonymous" SHOULD be included yielding an initial identity of "anonymous@tls-pok-dpp.eap.arpa". However, in order to facilitate interoperability, implementations SHOULD be able to handle receiving an initial identity with no username, thus yielding an initial identity of "@tls-pok-dpp.eap.arpa". This identifier MUST be included in the EAP Identity response in order to indicate to the Authenticator that an EAP method that supports TLS-POK SHOULD be started.
 
 ~~~
    Authenticating Peer     Authenticator

@@ -242,7 +242,7 @@ The server continues with the TLS handshake and uses the EPSK to prove that it k
 
 Once the TLS handshake completes, the client and server have established mutual trust. The server can then proceed to provision a credential onto the client using, for example, the mechanisms outlined in {{?RFC7170}}.
 
-The client can then use this provisioned credential for subsequent network authentication. The BSK is only used during bootstrap, and it not used for any subsequent network access.
+The client can then use this provisioned credential for subsequent network authentication. The BSK is only used during bootstrap, and is not used for any subsequent network access.
 
 # IANA Considerations
 

@@ -133,12 +133,14 @@ epskid = HKDF-Expand(HKDF-Extract(<>, Base Key),
                        "tls13-bspsk-identity", L)
 where:
   - epskid is the EPSK External Identity
-  - <> is a NULL salt 
   - Base Key is the DER-encoded ASN.1 subjectPublicKeyInfo
     representation of the BSK public key
   - L is the length of the digest of the underlying hash
     algorithm 
+  - <> is a NULL salt which is a string of L zeros
 ~~~
+
+A test vector for EPSK External Identity derivation is given in the appendix.
 
 The {{!RFC9258}} ImportedIdentity structure is defined as:
 
@@ -257,3 +259,33 @@ Trust on the part of the client is based on successful completion of the TLS 1.3
 An attack on the bootstrapping method which substitutes the public key of a corrupted device for the public key of an honest device can result in the TLS sever on-boarding and trusting the corrupted device.
 
 If an adversary has knowledge of the bootstrap public key, the adversary may be able to make the client bootstrap against the adversary's network. For example, if an adversary intercepts and scans QR labels on clients, and the adversary can force the client to connect to its server, then the adversary can complete the TLS-POK handshake with the client and the client will connect to the adversary's server. Since physical possession implies ownership, there is nothing to prevent a stolen device from being on-boarded. 
+
+--- end
+
+# Appendix
+
+Test vectors for deriving an EPSK External Identity from an EC public key follow.
+
+The base64 encoding of the DER representation of an example ASN.1 SubjectPublicKeyInfo is:
+
+~~~
+TBD
+~~~
+
+The ASN.1 notation is:
+
+~~~
+TBD
+~~~
+
+The base64 encoding of the HKDF-Extract operation is:
+
+~~~
+TBD
+~~~
+
+The base64 encoding of the EPSK External Identity output of HKDF-Expand operation is:
+
+~~~
+TBD
+~~~

@@ -278,7 +278,7 @@ The ASN.1 notation is:
 TBD
 ~~~
 
-The base64 encoding of the HKDF-Extract operation is:
+The base64 encoding of the HKDF-Extract operation output is:
 
 ~~~
 TBD

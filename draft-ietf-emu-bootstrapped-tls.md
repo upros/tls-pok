@@ -102,6 +102,12 @@ Enterprise deployments typically require an [IEEE802.1X]/EAP-based authenticatio
 
 Devices whose BSK public key can be obtained in an out-of-band fashion and provisioned on the network can perform a TLS-based EAP exchange, for instance Tunnel Extensible Authentication Protocol (TEAP) {{?RFC7170}}, and authenticate the TLS exchange using the bootstrapping mechanisms defined in {{bootstrapping-in-tls-13}}. This network connectivity can then be used to perform an enrollment protocol (such as provided by {{?RFC7170}}) to obtain a credential for subsequent network connectivity and certificate lifecycle maintenance.
 
+## Supported EAP Methods
+
+This document defines a boostrapping mechanism that results in a certificate being provisioned on a device that can be used for subsequent network access. Therefore, an EAP method that supports provisioning of a certificate on a device is required. The only EAP method that currently supports provisioning of a certificate on a device is TEAP, therefore this document assumes that TEAP is the only suported EAP method. Section {{using-tls-bootstrapping-in-eap}} describes how TLS-POK is used with TEAP, including defining a suitable NAI.
+
+If future EAP methods are defined that support certificate provisioning, then TLS-POK could potentially be used with those methods. Defining how this would work is out of scope of this document.
+
 # Bootstrap Key
 
 The mechanism for on-boarding of devices defined in this document relies on an elliptic curve (EC) bootstrap key (BSK). This BSK MUST be from a cryptosystem suitable for doing ECDSA. A bootstrapping client device has an associated EC BSK. The BSK may be static and baked into device firmware at manufacturing time, or may be dynamic and generated at on-boarding time by the device. The BSK public key MUST be encoded as the ASN.1 SEQUENCE SubjectPublicKeyInfo from {{!RFC5280}}. If the BSK public key can be shared in a trustworthy manner with a TLS server, a form of "entity authentication" (the step from which all subsequent authentication proceeds) can be obtained. 
@@ -209,7 +215,7 @@ The handshake is shown in Figure 1.
 
 # Using TLS Bootstrapping in EAP
 
-Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP Identity request to the newly connected peer. For unprovisioned devices that desire to take advantage of TLS-POK, there is no initial realm in which to construct an NAI (see {{?RFC7542}}). This document uses the NAI mechanisms defined in {{!I-D.ietf-emu-eap-arpa}} and defines the EAP realm "tls-pok-dpp.eap.arpa". The username "anonymous" SHOULD be included yielding an initial identity of "anonymous@tls-pok-dpp.eap.arpa". However, in order to facilitate interoperability, implementations SHOULD be able to handle receiving an initial identity with no username, that is, an initial identity of "@tls-pok-dpp.eap.arpa". This identifier MUST be included in the EAP Identity response in order to indicate to the Authenticator that an EAP method that supports TLS-POK SHOULD be started.
+Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP Identity request to the newly connected peer. For unprovisioned devices that desire to take advantage of TLS-POK, there is no initial realm in which to construct an NAI (see {{?RFC7542}}). This document uses the NAI mechanisms defined in {{!I-D.ietf-emu-eap-arpa}} and defines the EAP username "tls-pok-dpp" for use with the TEAP realm "teap.eap.arpa". The username "tls-pok-dpp" MUST be included yielding an initial identity of "tls-pok-dpp@teap.eap.arpa". This identifier MUST be included in the EAP Identity response in order to indicate to the Authenticator that TEAP is the desired EAP method. {{!I-D.ietf-emu-eap-arpa}} recommends how the device should behave if the Authenticator does not support TEAP or TLS-POK.
 
 ~~~
    Authenticating Peer     Authenticator
@@ -219,7 +225,7 @@ Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP I
 
     EAP-Response/
     Identity
-    (anonymous@tls-pok-dpp.eap.arpa) ->
+    (tls-pok-dpp@teap.eap.arpa) ->
 
                             <- EAP-Request/
                             EAP-Type=TEAP

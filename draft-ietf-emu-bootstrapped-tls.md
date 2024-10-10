@@ -120,7 +120,7 @@ Any bootstrapping method defined for, or used by, [DPP] is compatible with TLS-P
 
 # Bootstrapping in TLS 1.3
 
-Bootstrapping in TLS 1.3 leverages {{!RFC8773}} Certificate-Based Authentication with an External Pre-Shared Key. The External PSK (EPSK) is derived from the BSK public key as described in {{external-psk-derivation}}, and the EPSK is imported using {{!RFC9258}} Importing External Pre-Shared Keys (PSKs) for TLS 1.3. As the BSK public key is an ASN.1 SEQUENCE SubjectPublicKeyInfo from {{!RFC5280}}, and not a full PKI Certificate, the client must use {{!RFC7250}} Using Raw Public Keys in TLS and DTLS in order to presenti the BSK as raw public key.
+Bootstrapping in TLS 1.3 leverages {{!RFC8773}} Certificate-Based Authentication with an External Pre-Shared Key. The External PSK (EPSK) is derived from the BSK public key as described in {{external-psk-derivation}}, and the EPSK is imported using {{!RFC9258}} Importing External Pre-Shared Keys (PSKs) for TLS 1.3. As the BSK public key is an ASN.1 SEQUENCE SubjectPublicKeyInfo from {{!RFC5280}}, and not a full PKI Certificate, the client must use {{!RFC7250}} Using Raw Public Keys in TLS and DTLS in order to present the BSK as raw public key.
 
 The TLS PSK handshake gives the client proof that the server knows the BSK public key. Certificate-based authentication of the client to the server using the BSK gives the server proof that the client knows the BSK private key. This satisfies the proof of ownership requirements outlined in {{introduction}}.
 

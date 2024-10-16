@@ -64,7 +64,7 @@ If a device has a public / private keypair, and trust in the integrity of a devi
 
 Device on-boarding protocols such as the Device Provisioning Profile [DPP], also referred to as Wi-Fi Easy Connect, address this use case but they have drawbacks. [DPP] for instance does not support wired network access, and does not specify how the device's DPP keypair can be used in a TLS handshake.  This document describes an on-boarding protocol that can be used for wired network access, which we refer to as TLS Proof of Knowledge or TLS-POK.
 
-This document does not address the problem of Wi-Fi network discovery, where a bootstrapping device detects multiple different Wi-Fi networks and needs a more robust and scalable mechanism than simple round-robin to determine the correct network to attach to. DPP addresses this issue. Thus, the intention is that DPP is the recommended mechanism for bootstrapping against Wi-Fi networks, and TLS-POK is the recommended mechanism for bootstrapping against wired networks.
+This document does not address the problem of Wi-Fi network discovery, where a bootstrapping device detects multiple different Wi-Fi networks and needs a more robust and scalable mechanism than simple round-robin to determine the correct network to attach to. DPP addresses this issue. Thus, the intention is that DPP is the RECOMMENDED mechanism for bootstrapping against Wi-Fi networks, and TLS-POK is the RECOMMENDED mechanism for bootstrapping against wired networks.
 
 ## Terminology
 
@@ -101,6 +101,12 @@ A bootstrapping device holds a public / private elliptic curve (EC) key pair whi
 Enterprise deployments typically require an [IEEE802.1X]/EAP-based authentication to obtain network access. Protocols like Enrollment over Secure Transport (EST) {{?RFC7030}} can be used to enroll devices into a Certification Authority to allow them to authenticate using 802.1X/EAP. This creates a Catch-22 where a certificate is needed for network access and network access is needed to obtain certificate.
 
 Devices whose BSK public key can be obtained in an out-of-band fashion and provisioned on the network can perform a TLS-based EAP exchange, for instance Tunnel Extensible Authentication Protocol (TEAP) {{?RFC7170}}, and authenticate the TLS exchange using the bootstrapping mechanisms defined in {{bootstrapping-in-tls-13}}. This network connectivity can then be used to perform an enrollment protocol (such as provided by {{?RFC7170}}) to obtain a credential for subsequent network connectivity and certificate lifecycle maintenance.
+
+## Supported EAP Methods
+
+This document defines a boostrapping mechanism that results in a certificate being provisioned on a device that can be used for subsequent network access. Therefore, an EAP method that supports provisioning of a certificate on a device is required. The only EAP method that currently supports provisioning of a certificate on a device is TEAP, therefore this document assumes that TEAP is the only suported EAP method. Section {{using-tls-bootstrapping-in-eap}} describes how TLS-POK is used with TEAP, including defining a suitable NAI.
+
+If future EAP methods are defined that support certificate provisioning, then TLS-POK could potentially be used with those methods. Defining how this would work is out of scope of this document.
 
 # Bootstrap Key
 
@@ -211,7 +217,7 @@ The handshake is shown in Figure 1.
 
 # Using TLS Bootstrapping in EAP
 
-Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP Identity request to the newly connected peer. For unprovisioned devices that desire to take advantage of TLS-POK, there is no initial realm in which to construct an NAI (see {{?RFC7542}}). This document uses the NAI mechanisms defined in {{!I-D.ietf-emu-eap-arpa}} and defines the EAP realm "tls-pok-dpp.eap.arpa". The username "anonymous" SHOULD be included yielding an initial identity of "anonymous@tls-pok-dpp.eap.arpa". However, in order to facilitate interoperability, implementations SHOULD be able to handle receiving an initial identity with no username, that is, an initial identity of "@tls-pok-dpp.eap.arpa". This identifier MUST be included in the EAP Identity response in order to indicate to the Authenticator that an EAP method that supports TLS-POK SHOULD be started.
+Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP Identity request to the newly connected peer. For unprovisioned devices that desire to take advantage of TLS-POK, there is no initial realm in which to construct an NAI (see {{?RFC7542}}). This document uses the NAI mechanisms defined in {{!I-D.ietf-emu-eap-arpa}} and defines the EAP username "tls-pok-dpp" for use with the TEAP realm "teap.eap.arpa". The username "tls-pok-dpp" MUST be included yielding an initial identity of "tls-pok-dpp@teap.eap.arpa". This identifier MUST be included in the EAP Identity response in order to indicate to the Authenticator that TEAP is the desired EAP method. {{!I-D.ietf-emu-eap-arpa}} recommends how the device should behave if the Authenticator does not support TEAP or TLS-POK.
 
 ~~~
    Authenticating Peer     Authenticator
@@ -221,7 +227,7 @@ Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP I
 
     EAP-Response/
     Identity
-    (anonymous@tls-pok-dpp.eap.arpa) ->
+    (tls-pok-dpp@teap.eap.arpa) ->
 
                             <- EAP-Request/
                             EAP-Type=TEAP

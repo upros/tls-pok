@@ -258,7 +258,7 @@ None.
 
 As described in sections {{alignment-with-wi-fi-alliance-device-provisioning-profile} and {{external-psk-derivation}}, an [RFC9258] External Identity is derived from the DER-encoded ASN.1 subjectPublicKeyInfo representation of the compressed format of BSK public key, where the BSK may be base64 encoded in a QR code.
 
-Some base64 decoder library implementations may zero-byte pad output strings in order to align on specific byte boundaries, however, the DER-encoded ASN.1 subjectPublicKeyInfo representation of the compressed format of the BSK public key is not zero-byte padded. If the BSK is delivered as a base64 encoded string, care must be taken when decoding that base64 string to ensure that the decoder library does not add any zero-byte padding to the end of the decoded string. Failure to do so could result in mismatched derivation of the [RFC9258] External Identity between boostrapping device and EAP server, and thus bootstrap failure.
+Some base64 decoder library implementations may zero-byte pad output strings in order to align on specific byte boundaries, however, the DER-encoded ASN.1 subjectPublicKeyInfo representation of the compressed format of the BSK public key is not zero-byte padded. If the BSK is delivered as a base64 encoded string, care must be taken when decoding that base64 string to ensure that the decoder library does not add any zero-byte padding to the end of the decoded string. Failure to do so could result in mismatched derivation of the [RFC9258] External Identity between bootstrapping device and EAP server, and thus bootstrap failure.
 
 # Security Considerations 
 

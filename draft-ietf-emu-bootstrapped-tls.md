@@ -42,10 +42,11 @@ informative:
         ins: F. Stajano
         name: Frank Stajano
       -
-        ins: E. Rescorla
-        name: Eric Rescorla
+        ins: R. Anderson
+        name: Ross Anderson
 
-    title: "The Ressurecting Duckling: Security Issues for Ad-Hoc Wireless Networks"
+    title: "The Resurrecting Duckling: Security Issues for Ad-Hoc Wireless Networks"
+    target: https://www.cl.cam.ac.uk/~fms27/papers/1999-StajanoAnd-duckling.pdf
     date: 1999
 
 --- abstract
@@ -104,7 +105,7 @@ Devices whose BSK public key can be obtained in an out-of-band fashion and provi
 
 ## Supported EAP Methods
 
-This document defines a boostrapping mechanism that results in a certificate being provisioned on a device that can be used for subsequent network access. Therefore, an EAP method that supports provisioning of a certificate on a device is required. The only EAP method that currently supports provisioning of a certificate on a device is TEAP, therefore this document assumes that TEAP is the only suported EAP method. Section {{using-tls-bootstrapping-in-eap}} describes how TLS-POK is used with TEAP, including defining a suitable NAI.
+This document defines a boostrapping mechanism that results in a certificate being provisioned on a device that can be used for subsequent network access. Therefore, an EAP method that supports provisioning of a certificate on a device is required. The only EAP method that currently supports provisioning of a certificate on a device is TEAP, therefore this document assumes that TEAP is the only supported EAP method. Section {{using-tls-bootstrapping-in-eap}} describes how TLS-POK is used with TEAP, including defining a suitable NAI.
 
 If future EAP methods are defined that support certificate provisioning, then TLS-POK could potentially be used with those methods. Defining how this would work is out of scope of this document.
 

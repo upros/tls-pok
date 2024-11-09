@@ -252,7 +252,11 @@ The client can then use this provisioned credential for subsequent network authe
 
 # IANA Considerations
 
-None.
+This document adds the following to the "EAP Provisioning Identifiers" registry in the "Extensible Authentication Protocol (EAP) Registry" group.
+
+NAI: tls-pok-dpp@teap.eap.arpa
+Method Type: TEAP
+Reference: THIS DOCUMENT
 
 # Security Considerations 
 

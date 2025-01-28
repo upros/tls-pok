@@ -174,7 +174,7 @@ and is created using the following values:
 external_identity = epskid
 context = "tls13-bsk"
 target_protocol = TLS1.3(0x0304)
-target_kdf = <as per RFC9528>
+target_kdf = <as per RFC9258>
 ~~~
 
 The ImportedIdentity context value MUST be "tls13-bsk". This informs the server that the mechanisms specified in this document for deriving the EPSK and executing the TLS handshake MUST be used. The EPSK and ImportedIdentity are used in the TLS handshake as specified in {{!RFC9258}}. Multiple ImportedIdentity values may be imported as per {{!RFC9258}} section 5.1. The target_kdf follows {{!RFC9258}} and aligns with the cipher suite hash algorithms advertised in the TLS 1.3 handshake between the device and the server.

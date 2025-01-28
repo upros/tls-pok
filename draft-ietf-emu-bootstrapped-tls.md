@@ -49,6 +49,13 @@ informative:
     target: https://www.cl.cam.ac.uk/~fms27/papers/1999-StajanoAnd-duckling.pdf
     date: 1999
 
+  sha2:
+    author:
+      org: National Institute of Standards and Technology
+    title: FIPS 180-4 Secure Hash Standard (SHS)
+    target: https://doi.org/10.6028/NIST.FIPS.180-4
+    date: August 2015
+
 --- abstract
 
 This document defines a mechanism that enables a bootstrapping device to establish trust and mutually authenticate against a network. Bootstrapping devices have a public private key pair, and this mechanism enables a network server to prove to the device that it knows the public key, and the device to prove to the server that it knows the private key. The mechanism leverages existing DPP and TLS standards and can be used in an EAP exchange.
@@ -133,7 +140,9 @@ The TLS PSK handshake gives the client proof that the server knows the BSK publi
 
 ## External PSK Derivation
 
-An {{RFC9258}} EPSK is made up of the tuple of (Base Key, External Identity, Hash). The Base Key is the DER-encoded ASN.1 subjectPublicKeyInfo representation of the BSK public key. Zero byte padding MUST NOT be added to the DER-encoded representation of the BSK public key. The External Identity is derived from the BSK public key using {{?RFC5869}} with the hash algorithm from the ciphersuite as follows:
+An {{RFC9258}} EPSK is made up of the tuple of (Base Key, External Identity, Hash). The Base Key is the DER-encoded ASN.1 subjectPublicKeyInfo representation of the BSK public key. Zero byte padding MUST NOT be added to the DER-encoded representation of the BSK public key.
+
+The External Identity is derived from the DER-encoded representation of the BSK public key using {{?RFC5869}} with the SHA-256 hash algorithm [SHA2] as follows:
 
 ~~~
 epskid = HKDF-Expand(HKDF-Extract(<>, Base Key),
@@ -142,10 +151,11 @@ where:
   - epskid is the EPSK External Identity
   - Base Key is the DER-encoded ASN.1 subjectPublicKeyInfo
     representation of the BSK public key
-  - L is the length of the digest of the underlying hash
-    algorithm 
+  - L equals 32, the length in octets of the SHA-256 output
   - <> is a NULL salt which is a string of L zeros
 ~~~
+
+SHA-256 MUST be used when deriving epskid using {{?RFC5869}}.
 
 The {{!RFC9258}} ImportedIdentity structure is defined as:
 
@@ -164,10 +174,10 @@ and is created using the following values:
 external_identity = epskid
 context = "tls13-bsk"
 target_protocol = TLS1.3(0x0304)
-target_kdf = HKDF_SHA256(0x0001)
+target_kdf = <as per RFC9528>
 ~~~
 
-The ImportedIdentity context value MUST be "tls13-bsk". This informs the server that the mechanisms specified in this document for deriving the EPSK and executing the TLS handshake MUST be used. The EPSK and ImportedIdentity are used in the TLS handshake as specified in {{!RFC9258}}.
+The ImportedIdentity context value MUST be "tls13-bsk". This informs the server that the mechanisms specified in this document for deriving the EPSK and executing the TLS handshake MUST be used. The EPSK and ImportedIdentity are used in the TLS handshake as specified in {{!RFC9258}}. Multiple ImportedIdentity values may be imported as per {{!RFC9258}} section 5.1. The target_kdf follows {{!RFC9258}} and aligns with the cipher suite hash algorithms advertised in the TLS 1.3 handshake between the device and the server.
 
 A performance versus storage tradeoff a server can choose is to precompute the identity of every bootstrapped key with every hash algorithm that it uses in TLS and use that to quickly lookup the bootstrap key and generate the PSK. Servers that choose not to employ this optimization will have to do a runtime check with every bootstrap key it holds against the identity the client provides.
 
@@ -261,7 +271,10 @@ Reference: THIS DOCUMENT
 
 # Implementation Considerations 
 
-Two key points are documented above, and are repeated here. The subjectPublicKey contained in the ASN.1 SEQUENCE SubjectPublicKeyInfo MUST be the compressed format of the public key. When deriving the External PSK from the BSK, zero byte padding MUST NOT be added to the DER-encoded representation of the BSK public key.
+Three key points are documented above, and are repeated here.
+- The subjectPublicKey contained in the ASN.1 SEQUENCE SubjectPublicKeyInfo MUST be the compressed format of the public key.
+- When deriving the External PSK from the BSK, zero byte padding MUST NOT be added to the DER-encoded representation of the BSK public key.
+- SHA-256 MUST be used when using {{!RFC5869}} to derive the External PSK from the BSK.
 
 # Security Considerations 
 

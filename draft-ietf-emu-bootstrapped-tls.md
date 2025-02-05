@@ -49,6 +49,13 @@ informative:
     target: https://www.cl.cam.ac.uk/~fms27/papers/1999-StajanoAnd-duckling.pdf
     date: 1999
 
+  sha2:
+    author:
+      org: National Institute of Standards and Technology
+    title: FIPS 180-4 Secure Hash Standard (SHS)
+    target: https://doi.org/10.6028/NIST.FIPS.180-4
+    date: August 2015
+
 --- abstract
 
 This document defines a mechanism that enables a bootstrapping device to establish trust and mutually authenticate against a network. Bootstrapping devices have a public private key pair, and this mechanism enables a network server to prove to the device that it knows the public key, and the device to prove to the server that it knows the private key. The mechanism leverages existing DPP and TLS standards and can be used in an EAP exchange.
@@ -111,7 +118,7 @@ If future EAP methods are defined that support certificate provisioning, then TL
 
 # Bootstrap Key
 
-The mechanism for on-boarding of devices defined in this document relies on an elliptic curve (EC) bootstrap key (BSK). This BSK MUST be from a cryptosystem suitable for doing ECDSA. A bootstrapping client device has an associated EC BSK. The BSK may be static and baked into device firmware at manufacturing time, or may be dynamic and generated at on-boarding time by the device. The BSK public key MUST be encoded as the DER representation of an ASN.1 SEQUENCE SubjectPublicKeyInfo from {{!RFC5280}}. Note that the BSK public key encoding MUST include the ASN.1 AlgorithmIdentifier in addition to the subjectPublicKey. If the BSK public key can be shared in a trustworthy manner with a TLS server, a form of "entity authentication" (the step from which all subsequent authentication proceeds) can be obtained. 
+The mechanism for on-boarding of devices defined in this document relies on an elliptic curve (EC) bootstrap key (BSK). This BSK MUST be from a cryptosystem suitable for doing ECDSA. A bootstrapping client device has an associated EC BSK. The BSK may be static and baked into device firmware at manufacturing time, or may be dynamic and generated at on-boarding time by the device. The BSK public key MUST be encoded as the DER representation of an ASN.1 SEQUENCE SubjectPublicKeyInfo from {{!RFC5280}}. The subjectPublicKey MUST be the compressed format of the public key. Note that the BSK public key encoding MUST include the ASN.1 AlgorithmIdentifier in addition to the subjectPublicKey. If the BSK public key can be shared in a trustworthy manner with a TLS server, a form of "entity authentication" (the step from which all subsequent authentication proceeds) can be obtained. 
 
 The exact mechanism by which the server gains knowledge of the BSK public key is out of scope of this specification, but possible mechanisms include scanning a QR code to obtain a base64 encoding of the DER representation of the ASN.1 SubjectPublicKeyInfo or uploading of a Bill of Materials (BOM) which includes this information. More information on QR encoding is given in {{alignment-with-wi-fi-alliance-device-provisioning-profile}}. If the QR code is physically attached to the client device, or the BOM is associated with the device, the assumption is that the BSK public key obtained in this bootstrapping method belongs to the client. In this model, physical possession of the device implies legitimate ownership.
 
@@ -133,7 +140,9 @@ The TLS PSK handshake gives the client proof that the server knows the BSK publi
 
 ## External PSK Derivation
 
-An {{RFC9258}} EPSK is made up of the tuple of (Base Key, External Identity, Hash). The Base Key is the DER-encoded ASN.1 subjectPublicKeyInfo representation of the BSK public key. The External Identity is derived from the BSK public key using {{?RFC5869}} with the hash algorithm from the ciphersuite as follows:
+An {{RFC9258}} EPSK is made up of the tuple of (Base Key, External Identity, Hash). The Base Key is the DER-encoded ASN.1 subjectPublicKeyInfo representation of the BSK public key. Zero byte padding MUST NOT be added to the DER-encoded representation of the BSK public key.
+
+The External Identity is derived from the DER-encoded representation of the BSK public key using {{?RFC5869}} with the SHA-256 hash algorithm [SHA2] as follows:
 
 ~~~
 epskid = HKDF-Expand(HKDF-Extract(<>, Base Key),
@@ -142,10 +151,11 @@ where:
   - epskid is the EPSK External Identity
   - Base Key is the DER-encoded ASN.1 subjectPublicKeyInfo
     representation of the BSK public key
-  - L is the length of the digest of the underlying hash
-    algorithm 
+  - L equals 32, the length in octets of the SHA-256 output
   - <> is a NULL salt which is a string of L zeros
 ~~~
+
+SHA-256 MUST be used when deriving epskid using {{?RFC5869}}.
 
 The {{!RFC9258}} ImportedIdentity structure is defined as:
 
@@ -164,10 +174,10 @@ and is created using the following values:
 external_identity = epskid
 context = "tls13-bsk"
 target_protocol = TLS1.3(0x0304)
-target_kdf = HKDF_SHA256(0x0001)
+target_kdf = <as per RFC9258>
 ~~~
 
-The ImportedIdentity context value MUST be "tls13-bsk". This informs the server that the mechanisms specified in this document for deriving the EPSK and executing the TLS handshake MUST be used. The EPSK and ImportedIdentity are used in the TLS handshake as specified in {{!RFC9258}}.
+The ImportedIdentity context value MUST be "tls13-bsk". This informs the server that the mechanisms specified in this document for deriving the EPSK and executing the TLS handshake MUST be used. The EPSK and ImportedIdentity are used in the TLS handshake as specified in {{!RFC9258}}. Multiple ImportedIdentity values may be imported as per {{!RFC9258}} section 5.1. The target_kdf follows {{!RFC9258}} and aligns with the cipher suite hash algorithms advertised in the TLS 1.3 handshake between the device and the server.
 
 A performance versus storage tradeoff a server can choose is to precompute the identity of every bootstrapped key with every hash algorithm that it uses in TLS and use that to quickly lookup the bootstrap key and generate the PSK. Servers that choose not to employ this optimization will have to do a runtime check with every bootstrap key it holds against the identity the client provides.
 
@@ -258,6 +268,13 @@ This document adds the following to the "EAP Provisioning Identifiers" registry 
 NAI: tls-pok-dpp@teap.eap.arpa
 Method Type: TEAP
 Reference: THIS DOCUMENT
+
+# Implementation Considerations 
+
+Three key points are documented above, and are repeated here.
+- The subjectPublicKey contained in the ASN.1 SEQUENCE SubjectPublicKeyInfo MUST be the compressed format of the public key.
+- When deriving the External PSK from the BSK, zero byte padding MUST NOT be added to the DER-encoded representation of the BSK public key.
+- SHA-256 MUST be used when using {{!RFC5869}} to derive the External PSK from the BSK.
 
 # Security Considerations 
 

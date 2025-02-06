@@ -296,54 +296,39 @@ If an adversary has knowledge of the bootstrap public key, the adversary may be 
 
 Base64 encoding of BSK:
 
-~~~
-MDkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDIgACMvLyoOykj8sFJxSoZfzafuVEvM+kNYCxpEC6KITLb9g=
-~~~
+````MDkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDIgACMvLyoOykj8sFJxSoZfzafuVEvM+kNYCxpEC6KITLb9g=````
 
 Base64 encoding of epskid:
 
-~~~
-Bd+lLlg/ERdtYacfzDfh1LjdL0+QWJQHdYXoS7JDSkA=
-~~~
+````Bd+lLlg/ERdtYacfzDfh1LjdL0+QWJQHdYXoS7JDSkA=````
 
 ## Test Vector 2: secp384r1 
 
 Base64 encoding of BSK:
 
-~~~
-MEYwEAYHKoZIzj0CAQYFK4EEACIDMgACwDXKQ1pytcR1WbfqPaNGaXQ0RJnijJG1em8ZKilryZRDfNioq7+EPquT6l9laRvw
-~~~
+````MEYwEAYHKoZIzj0CAQYFK4EEACIDMgACwDXKQ1pytcR1WbfqPaNGaXQ0RJnijJG1em8ZKilryZRDfNioq7+EPquT6l9laRvw````
 
 Base64 encoding of epskid:
 
-~~~
-yMWK26ec3klVFewg2znKntQgVoRcRRjW81n677GL+8w=
-~~~
+````yMWK26ec3klVFewg2znKntQgVoRcRRjW81n677GL+8w=````
 
 ## Test Vector 3: secp521r1
 
 Base64 encoding of BSK:
 
-~~~
-MFgwEAYHKoZIzj0CAQYFK4EEACMDRAADAIiHIAOXdPVuI8khCnJQHT1j53rQRnFCcY3CZUvxdXKJR9KW5RVB3HDQfmkoQWHEz4XngXUeFyDXliEo3eF6vhqDMFgwEAYHKoZIzj0CAQYFK4EEACMDRAADAIiHIAOXdPVuI8khCnJQHT1j53rQRnFCcY3CZUvxdXKJR9KW5RVB3HDQfmkoQWHEz4XngXUeFyDXliEo3eF6vhqD
-~~~
+````MFgwEAYHKoZIzj0CAQYFK4EEACMDRAADAIiHIAOXdPVuI8khCnJQHT1j53rQRnFCcY3CZUvxdXKJR9KW5RVB3HDQfmkoQWHEz4XngXUeFyDXliEo3eF6vhqDMFgwEAYHKoZIzj0CAQYFK4EEACMDRAADAIiHIAOXdPVuI8khCnJQHT1j53rQRnFCcY3CZUvxdXKJR9KW5RVB3HDQfmkoQWHEz4XngXUeFyDXliEo3eF6vhqD````
 
 Base64 encoding of epskid:
 
-~~~
-D+s3Ex81A8N36ECI3AdXwBzrOXuonZUMdhhHXVINhg8=
-~~~
+````D+s3Ex81A8N36ECI3AdXwBzrOXuonZUMdhhHXVINhg8=````
 
 ## Test Vector 4: brainpoolP256r1
 
 Base64 encoding of BSK:
 
-~~~
-MDowFAYHKoZIzj0CAQYJKyQDAwIIAQEHAyIAA3fyUWqiV8NC9DAC88JzmVqnoT/reuCvq8lHowtwWNOZ
-~~~
+````MDowFAYHKoZIzj0CAQYJKyQDAwIIAQEHAyIAA3fyUWqiV8NC9DAC88JzmVqnoT/reuCvq8lHowtwWNOZ````
 
 Base64 encoding of epskid:
 
-~~~
-j2TLWcXtrTej+f3q7EZrhp5SmP31uk1ZB23dfcR93EY=
-~~~
+````j2TLWcXtrTej+f3q7EZrhp5SmP31uk1ZB23dfcR93EY=````
+

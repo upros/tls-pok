@@ -181,6 +181,8 @@ The ImportedIdentity context value MUST be "tls13-bsk". This informs the server 
 
 A performance versus storage tradeoff a server can choose is to precompute the identity of every bootstrapped key with every hash algorithm that it uses in TLS and use that to quickly lookup the bootstrap key and generate the PSK. Servers that choose not to employ this optimization will have to do a runtime check with every bootstrap key it holds against the identity the client provides.
 
+Test vectors for derivation of an EPSK External Identity from a BSK are given in the appendix.
+
 ## TLS 1.3 Handshake Details
 
 The client includes the "tls_cert_with_extern_psk" extension in the ClientHello, per {{!RFC8773}}. The client identifies the BSK public key by inserting the serialized content of ImportedIdentity into the PskIdentity.identity in the PSK extension, per {{!RFC9258}}. The client MUST also include the {{!RFC7250}} "client_certificate_type" extension in the ClientHello and MUST specify type of RawPublicKey.
@@ -285,3 +287,63 @@ Trust on the part of the client is based on successful completion of the TLS 1.3
 An attack on the bootstrapping method which substitutes the public key of a corrupted device for the public key of an honest device can result in the TLS sever on-boarding and trusting the corrupted device.
 
 If an adversary has knowledge of the bootstrap public key, the adversary may be able to make the client bootstrap against the adversary's network. For example, if an adversary intercepts and scans QR labels on clients, and the adversary can force the client to connect to its server, then the adversary can complete the TLS-POK handshake with the client and the client will connect to the adversary's server. Since physical possession implies ownership, there is nothing to prevent a stolen device from being on-boarded. 
+
+--- back
+
+# Test Vectors
+
+## Test Vector 1: prime256v1
+
+Base64 encoding of BSK:
+
+~~~
+MDkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDIgACMvLyoOykj8sFJxSoZfzafuVEvM+kNYCxpEC6KITLb9g=
+~~~
+
+Base64 encoding of epskid:
+
+~~~
+Bd+lLlg/ERdtYacfzDfh1LjdL0+QWJQHdYXoS7JDSkA=
+~~~
+
+## Test Vector 2: secp384r1 
+
+Base64 encoding of BSK:
+
+~~~
+MEYwEAYHKoZIzj0CAQYFK4EEACIDMgACwDXKQ1pytcR1WbfqPaNGaXQ0RJnijJG1em8ZKilryZRDfNioq7+EPquT6l9laRvw
+~~~
+
+Base64 encoding of epskid:
+
+~~~
+yMWK26ec3klVFewg2znKntQgVoRcRRjW81n677GL+8w=
+~~~
+
+## Test Vector 3: secp521r1
+
+Base64 encoding of BSK:
+
+~~~
+MFgwEAYHKoZIzj0CAQYFK4EEACMDRAADAIiHIAOXdPVuI8khCnJQHT1j53rQRnFCcY3CZUvxdXKJR9KW5RVB3HDQfmkoQWHEz4XngXUeFyDXliEo3eF6vhqDMFgwEAYHKoZIzj0CAQYFK4EEACMDRAADAIiHIAOXdPVuI8khCnJQHT1j53rQRnFCcY3CZUvxdXKJR9KW5RVB3HDQfmkoQWHEz4XngXUeFyDXliEo3eF6vhqD
+~~~
+
+Base64 encoding of epskid:
+
+~~~
+D+s3Ex81A8N36ECI3AdXwBzrOXuonZUMdhhHXVINhg8=
+~~~
+
+## Test Vector 4: brainpoolP256r1
+
+Base64 encoding of BSK:
+
+~~~
+MDowFAYHKoZIzj0CAQYJKyQDAwIIAQEHAyIAA3fyUWqiV8NC9DAC88JzmVqnoT/reuCvq8lHowtwWNOZ
+~~~
+
+Base64 encoding of epskid:
+
+~~~
+j2TLWcXtrTej+f3q7EZrhp5SmP31uk1ZB23dfcR93EY=
+~~~

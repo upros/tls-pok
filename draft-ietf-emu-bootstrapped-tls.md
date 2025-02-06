@@ -274,8 +274,11 @@ Reference: THIS DOCUMENT
 # Implementation Considerations 
 
 Three key points are documented above, and are repeated here.
+
 - The subjectPublicKey contained in the ASN.1 SEQUENCE SubjectPublicKeyInfo MUST be the compressed format of the public key.
+
 - When deriving the External PSK from the BSK, zero byte padding MUST NOT be added to the DER-encoded representation of the BSK public key.
+
 - SHA-256 MUST be used when using {{!RFC5869}} to derive the External PSK from the BSK.
 
 # Security Considerations 

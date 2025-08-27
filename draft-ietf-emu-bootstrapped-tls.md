@@ -221,7 +221,6 @@ The handshake is shown in Figure 1.
          {Certificate}
          {CertificateVerify}
          {Finished}                 -------->
-         [Application Data]         <------->    [Application Data]
 ~~~
 
                     Figure 1: TLS 1.3 TLS-POK Handshake
@@ -290,6 +289,8 @@ Trust on the part of the client is based on successful completion of the TLS 1.3
 An attack on the bootstrapping method which substitutes the public key of a corrupted device for the public key of an honest device can result in the TLS sever on-boarding and trusting the corrupted device.
 
 If an adversary has knowledge of the bootstrap public key, the adversary may be able to make the client bootstrap against the adversary's network. For example, if an adversary intercepts and scans QR labels on clients, and the adversary can force the client to connect to its server, then the adversary can complete the TLS-POK handshake with the client and the client will connect to the adversary's server. Since physical possession implies ownership, there is nothing to prevent a stolen device from being on-boarded. 
+
+Manufacturers should use a unique BSK for every single device they manufacture. If multiple devices share the same BSK, then network operators cannot differentiate between these devices, and cannot ensure that only specific authorized devices are allowed connect to their networks.
 
 --- back
 

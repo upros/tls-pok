@@ -58,7 +58,7 @@ informative:
 
 --- abstract
 
-This document defines a mechanism that enables a bootstrapping device to establish trust and mutually authenticate against a network. Bootstrapping devices have a public private key pair, and this mechanism enables a network server to prove to the device that it knows the public key, and the device to prove to the server that it owns the private key. The mechanism leverages existing DPP and TLS standards and can be used in an EAP exchange.
+This document defines a mechanism that enables a bootstrapping device to establish trust and mutually authenticate against a network. Bootstrapping devices have a public private key pair, and this mechanism enables a network server to prove to the device that it knows the public key, and the device to prove to the server that it knows the private key. The mechanism leverages existing Device Provisioning Protocol (DPP) and TLS standards and can be used in an EAP exchange.
 
 --- middle
 

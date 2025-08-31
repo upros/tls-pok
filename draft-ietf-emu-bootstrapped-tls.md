@@ -104,7 +104,7 @@ The following terminology is used throughout this document.
 
 ## Bootstrapping Overview
 
-A bootstrapping device holds a public / private elliptic curve (EC) key pair which we refer to as a Bootstrap Key (BSK). The private key of the BSK is known only by the device. The public key of the BSK is known by the device, is known by the owner or holder of the device, and is provisioned on the TLS server by the TLS server operator. In order to establish trust and mutually authenticate, the TLS server proves to the device that it knows the public part of the BSK, and the device proves to the TLS server that it knows the private part of the BSK. More details on the BSK are given in {{bootstrap-key}}.
+A bootstrapping device holds a public / private elliptic curve (EC) key pair which this document refers to as a Bootstrap Key (BSK). The private key of the BSK is known only by the device. The public key of the BSK is known by the device, is known by the owner or holder of the device, and is provisioned on the TLS server by the TLS server operator. In order to establish trust and mutually authenticate, the TLS server proves to the device that it knows the public part of the BSK, and the device proves to the TLS server that it knows the private part of the BSK. More details on the BSK are given in {{bootstrap-key}}.
 
 The TLS server could be an EAP server for [IEEE802.1X] network access, or could for example be an Enrollment over Secure Transport (EST) {{?RFC7030}} server. In the case of authentication against an EAP server, the EAP server SHOULD provision the device with a credential that it uses for subsequent EAP authentication.
 

@@ -70,9 +70,9 @@ and network connectivity is needed to obtain a credential.  This poses a catch-2
 
 If a device has a public / private keypair, and trust in the integrity of a device's public key can be obtained in an out-of-band fashion, a device can be authenticated and provisioned with a usable credential for network access.  While this authentication can be strong, the device's authentication of the network is somewhat weaker.  [duckling] presents a functional security model to address this asymmetry.
 
-Device on-boarding protocols such as the Device Provisioning Profile [DPP], also referred to as Wi-Fi Easy Connect, address this use case but they have drawbacks. [DPP] for instance does not support wired network access, and does not specify how the device's DPP keypair can be used in a TLS handshake.  This document describes an on-boarding protocol that can be used for wired network access, which we refer to as TLS Proof of Knowledge or TLS-POK.
+Device on-boarding protocols such as the Device Provisioning Profile [DPP], also referred to as Wi-Fi Easy Connect, address this use case but they have drawbacks. [DPP] for instance does not support wired network access, and does not specify how the device's DPP keypair can be used in a TLS handshake.  This document describes an on-boarding protocol that can be used for wired network access. This protocol is called TLS Proof of Knowledge or TLS-POK.
 
-This document does not address the problem of Wi-Fi network discovery, where a bootstrapping device detects multiple different Wi-Fi networks and needs a more robust and scalable mechanism than simple round-robin to determine the correct network to attach to. DPP addresses this issue. Thus,  DPP SHOULD be used for bootstrapping against Wi-Fi networks, and TLS-POK SHOULD be used for bootstrapping against wired networks.
+This document does not address the problem of Wi-Fi network discovery, where a bootstrapping device detects multiple different Wi-Fi networks and needs a more robust and scalable mechanism than simple round-robin to determine the correct network to attach to. DPP addresses this issue. Thus, DPP SHOULD be used for bootstrapping against Wi-Fi networks, and TLS-POK SHOULD be used for bootstrapping against wired networks.
 
 ## Terminology
 
@@ -146,7 +146,7 @@ An {{RFC9258}} EPSK is made up of the tuple of (Base Key, External Identity, Has
 
 The External Identity is derived from the DER-encoded representation of the BSK public key using {{?RFC5869}} with the SHA-256 hash algorithm [SHA2] as follows:
 
-~~~
+~~~ aasvg
 epskid = HKDF-Expand(HKDF-Extract(<>, Base Key),
                        "tls13-bspsk-identity", L)
 where:
@@ -161,7 +161,7 @@ SHA-256 MUST be used when deriving epskid using {{?RFC5869}}.
 
 The {{!RFC9258}} ImportedIdentity structure is defined as:
 
-~~~
+~~~ aasvg
 struct {
    opaque external_identity<1...2^16-1>;
    opaque context<0..2^16-1>;
@@ -172,7 +172,7 @@ struct {
 
 and is created using the following values:
 
-~~~
+~~~ aasvg
 external_identity = epskid
 context = "tls13-bsk"
 target_protocol = TLS1.3(0x0304)
@@ -199,9 +199,9 @@ When the server processes the client's Certificate, it MUST ensure that it is id
 
 When clients use the [duckling] form of authentication, they MAY forgo the checking of the server's certificate in the CertificateVerify and rely on the integrity of the bootstrapping method employed to distribute its key in order to validate trust in the authenticated TLS connection. 
 
-The handshake is shown in Figure 1.
+The handshake is shown in {{arch-one}}.
 
-~~~
+~~~ aasvg
 
          Client                                            Server
          --------                                          --------
@@ -225,13 +225,13 @@ The handshake is shown in Figure 1.
          {Finished}                 -------->
 ~~~
 
-                    Figure 1: TLS 1.3 TLS-POK Handshake
+{: #arch-one title="TLS 1.3 TLS-POK Handshake"}
 
 # Using TLS Bootstrapping in EAP
 
 Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP Identity request to the newly connected peer. For unprovisioned devices that desire to take advantage of TLS-POK, there is no initial realm in which to construct an NAI (see {{?RFC7542}}). This document uses the NAI mechanisms defined in {{!I-D.ietf-emu-eap-arpa}} and defines the EAP username "tls-pok-dpp" for use with the TEAP realm "teap.eap.arpa". The username "tls-pok-dpp" MUST be included yielding an initial identity of "tls-pok-dpp@teap.eap.arpa". This identifier MUST be included in the EAP Identity response in order to indicate to the Authenticator that TEAP is the desired EAP method. {{!I-D.ietf-emu-eap-arpa}} recommends how the device should behave if the Authenticator does not support TEAP or TLS-POK.
 
-~~~
+~~~ aasvg
    Authenticating Peer     Authenticator
    -------------------     -------------
                             <- EAP-Request/
@@ -288,7 +288,7 @@ Bootstrap and trust establishment by the TLS server is based on proof of knowled
 
 Trust on the part of the client is based on successful completion of the TLS 1.3 handshake using the EPSK derived from the BSK. This proves to the client that the server knows its BSK public key. In addition, the client assumes that knowledge of its BSK public key is not widely disseminated and therefore any server that proves knowledge of its BSK public key is the appropriate server from which to receive provisioning, for instance via {{?RFC7170}}. [duckling] describes a security model for this type of "imprinting".
 
-An attack on the bootstrapping method which substitutes the public key of a rogue device for the public key of an honest device can result in the TLS sever on-boarding and trusting the rogue device.
+An attack on the bootstrapping method which substitutes the public key of a rogue device for the public key of an honest device can result in the TLS server on-boarding and trusting the rogue device.
 
 If an adversary has knowledge of the bootstrap public key, the adversary may be able to make the client bootstrap against the adversary's network. For example, if an adversary intercepts and scans QR labels on clients, and the adversary can force the client to connect to its server, then the adversary can complete the TLS-POK handshake with the client and the client will connect to the adversary's server. Since physical possession implies ownership, there is nothing to prevent a stolen device from being on-boarded. 
 

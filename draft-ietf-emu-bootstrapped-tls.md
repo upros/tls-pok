@@ -68,19 +68,19 @@ informative:
 
 --- abstract
 
-This document defines a mechanism that enables a bootstrapping device to establish trust and mutually authenticate against a network. Bootstrapping devices have a public private key pair, and this mechanism enables a network server to prove to the device that it knows the public key, and the device to prove to the server that it knows the private key. The mechanism leverages existing Device Provisioning Protocol (DPP) and TLS standards and can be used in an EAP exchange.
+This document defines a mechanism that enables a bootstrapping device to establish trust and mutually authenticate against a TLS server. Bootstrapping devices have a public private key pair, and this mechanism enables a TLS server to prove to the device that it knows the public key, and the device to prove to the TLS server that it knows the private key. The mechanism leverages existing Device Provisioning Protocol (DPP) and TLS standards and can be used in an Extensible Authentication Protocol (EAP) exchange with an EAP server.
 
 --- middle
 
 
 # Introduction
 
-On-boarding devices with no, or limited, user interface can be difficult.  Sometimes a credential is needed to access the network,
-and network connectivity is needed to obtain a credential.  This poses a catch-22.
+On-boarding devices with no, or limited, user interface can be difficult.  Sometimes a credential is needed to access an [IEEE802.1X]/EAP-based network, and network connectivity is needed to obtain a credential.
+This poses a challenge for on-boarding devices.
 
-If a device has a public / private keypair, and trust in the integrity of a device's public key can be obtained in an out-of-band fashion, a device can be authenticated and provisioned with a usable credential for network access.  While this authentication can be strong, the device's authentication of the network is somewhat weaker.  [duckling] presents a functional security model to address this asymmetry.
+If a device has a public / private keypair, and trust in the integrity of a device's public key can be obtained in an out-of-band fashion, a device can be authenticated and provisioned with a usable credential for [IEEE802.1X]/EAP-based network access.  While this authentication can be strong, the device's authentication of the network is somewhat weaker.  [duckling] presents a functional security model to address this asymmetry.
 
-Device on-boarding protocols such as the Device Provisioning Profile [DPP], also referred to as Wi-Fi Easy Connect, address this use case but they have drawbacks. [DPP] for instance does not support wired network access, and does not specify how the device's DPP keypair can be used in a TLS handshake.  This document describes an on-boarding protocol that can be used for wired network access. This protocol is called TLS Proof of Knowledge or TLS-POK.
+Device on-boarding protocols such as the Device Provisioning Profile [DPP], also referred to as Wi-Fi Easy Connect, address this use case but they have drawbacks. [DPP] for instance does not support wired network access, and does not specify how the device's DPP keypair can be used in a TLS handshake.  This document describes an an authentication mechanism that a device can use to mutually authenticate against a TLS server, and describes how that authentication protocol can be used in an EAP exchange for [IEEE802.1X] wired network access. This protocol is called TLS Proof of Knowledge or TLS-POK.
 
 This document does not address the problem of Wi-Fi network discovery, where a bootstrapping device detects multiple different Wi-Fi networks and needs a more robust and scalable mechanism than simple round-robin to determine the correct network to attach to. DPP addresses this issue but DPP's discovery will not work on a wired 802.1X ethernet port while TLS-POK will. Therefore, TLS-POK SHOULD NOT be used for bootstrapping against wired networks, and SHOULD be used for bootstrapping against wired networks.
 
@@ -114,17 +114,19 @@ The following terminology is used throughout this document.
 
 ## Bootstrapping Overview
 
-A bootstrapping device holds a public / private elliptic curve (EC) key pair which we refer to as a Bootstrap Key (BSK). The private key of the BSK is known only by the device. The public key of the BSK is known by the device, is known by the owner or holder of the device, and is provisioned on the network by the network operator. In order to establish trust and mutually authenticate, the network proves to the device that it knows the public part of the BSK, and the device proves to the network that it knows the private part of the BSK. Once this trust has been established during bootstrapping, the network can provision the device with a credential that it uses for subsequent network access. More details on the BSK are given in {{bootstrap-key}}.
+A bootstrapping device holds a public / private elliptic curve (EC) key pair which this document refers to as a Bootstrap Key (BSK). The private key of the BSK is known only by the device. The public key of the BSK is known by the device, is known by the owner or holder of the device, and is provisioned on the TLS server by the TLS server operator. In order to establish trust and mutually authenticate, the TLS server proves to the device that it knows the public part of the BSK, and the device proves to the TLS server that it knows the private part of the BSK. More details on the BSK are given in {{bootstrap-key}}.
+
+The TLS server could be an EAP server for [IEEE802.1X] network access, or could for example be an Enrollment over Secure Transport (EST) {{?RFC7030}} server. In the case of authentication against an EAP server, the EAP server SHOULD provision the device with a credential that it uses for subsequent EAP authentication.
 
 ## EAP Network Access
 
-Enterprise deployments typically require an [IEEE802.1X]/EAP-based authentication to obtain network access. Protocols like Enrollment over Secure Transport (EST) {{?RFC7030}} can be used to enroll devices with a Certification Authority to allow them to authenticate using 802.1X/EAP. This creates a Catch-22 where a certificate is needed for network access and network access is needed to obtain certificate.
+Enterprise deployments typically require an [IEEE802.1X]/EAP-based authentication to obtain network access. Protocols like Enrollment over Secure Transport (EST) {{?RFC7030}} can be used to enroll devices with a Certification Authority to allow them to authenticate using 802.1X/EAP. This creates a problem for bootstrapping devices where a certificate is needed for EAP authentication and 802.1X network access is needed to obtain a certificate.
 
-Devices whose BSK public key can be obtained in an out-of-band fashion and provisioned on the network can perform a TLS-based EAP exchange, for instance Tunnel Extensible Authentication Protocol (TEAP) {{?RFC7170}}, and authenticate the TLS exchange using the bootstrapping mechanisms defined in {{bootstrapping-in-tls-13}}. This network connectivity can then be used to perform an enrollment protocol (such as provided by {{?RFC7170}}) to obtain a credential for subsequent network connectivity and certificate lifecycle maintenance.
+Devices whose BSK public key can be obtained in an out-of-band fashion and provisioned on the EAP server can perform a TLS-based EAP exchange, for instance Tunnel Extensible Authentication Protocol (TEAP) {{?RFC7170}}, and authenticate the TLS exchange using the authentication mechanisms defined in {{bootstrapping-in-tls-13}}. This network connectivity can then be used to perform an enrollment protocol (such as provided by {{?RFC7170}}) to obtain a credential for subsequent EAP authentication. Certificate lifecycle management may also be performed in subsequent TEAP transactions..
 
 ## Supported EAP Methods
 
-This document defines a bootstrapping mechanism that results in a certificate being provisioned on a device that can be used for subsequent network access. Therefore, an EAP method supporting the provisioning of a certificate on a device is required. The only EAP method that currently supports provisioning of a certificate on a device is TEAP, therefore this document assumes that TEAP is the only supported EAP method. Section {{using-tls-bootstrapping-in-eap}} describes how TLS-POK is used with TEAP, including defining a suitable Network Access Identifier (NAI).
+This document defines a bootstrapping mechanism that results in a certificate being provisioned on a device that can be used for subsequent EAP authentication. Therefore, an EAP method supporting the provisioning of a certificate on a device is required. The only EAP method that currently supports provisioning of a certificate on a device is TEAP, therefore this document assumes that TEAP is the only supported EAP method. Section {{using-tls-bootstrapping-in-eap}} describes how TLS-POK is used with TEAP, including defining a suitable Network Access Identifier (NAI).
 
 If future EAP methods are defined supporting certificate provisioning, then TLS-POK could potentially be used with those methods. Defining how this would work is out of scope of this document.
 
@@ -132,11 +134,11 @@ If future EAP methods are defined supporting certificate provisioning, then TLS-
 
 The mechanism for device on-boarding defined in this document relies on an elliptic curve (EC) bootstrap key (BSK). This BSK MUST be from a cryptosystem suitable for doing ECDSA. A bootstrapping client device has an associated EC BSK. The BSK may be static and baked into device firmware at manufacturing time, or may be dynamic and generated at on-boarding time by the device. The BSK public key MUST be encoded as the DER representation of an ASN.1 SEQUENCE SubjectPublicKeyInfo from {{!RFC5480}}. The subjectPublicKey MUST be the compressed format of the public key. Note that the BSK public key encoding MUST include the ASN.1 AlgorithmIdentifier in addition to the subjectPublicKey. If the BSK public key can be shared in a trustworthy manner with a TLS server, a form of "entity authentication" (the step from which all subsequent authentication proceeds) can be obtained. 
 
-The exact mechanism by which the server gains knowledge of the BSK public key is out of scope of this specification, but possible mechanisms include scanning a QR code to obtain a base64 encoding of the DER representation of the ASN.1 SubjectPublicKeyInfo or uploading of a Bill of Materials (BOM) which includes this information. More information on QR encoding is given in {{alignment-with-wi-fi-alliance-device-provisioning-profile}}. If the QR code is physically attached to the client device, or the BOM is associated with the device, the assumption is that the BSK public key obtained in this bootstrapping method belongs to the client. In this model, physical possession of the device implies legitimate ownership.
+The exact mechanism by which the TLS server gains knowledge of the BSK public key is out of scope of this specification, but possible mechanisms include scanning a QR code to obtain a base64 encoding of the DER representation of the ASN.1 SubjectPublicKeyInfo or uploading of a Bill of Materials (BOM) which includes this information. More information on QR encoding is given in {{alignment-with-wi-fi-alliance-device-provisioning-profile}}. If the QR code is physically attached to the client device, or the BOM is associated with the device, the assumption is that the BSK public key obtained in this bootstrapping method belongs to the client. In this model, physical possession of the device implies legitimate ownership.
 
-The server may have knowledge of multiple BSK public keys corresponding to multiple devices, and existing TLS mechanisms are leveraged that enable the server to identity a specific bootstrap public key corresponding to a specific device.
+The TLS server may have knowledge of multiple BSK public keys corresponding to multiple devices, and existing TLS mechanisms are leveraged that enable the server to identity a specific bootstrap public key corresponding to a specific device.
 
-Using the process defined herein, the client proves to the server that it has possession of the private key of its BSK. Provided that the mechanism in which the server obtained the BSK public key is trustworthy, a commensurate amount of authenticity of the resulting connection can be obtained. The server also proves that it knows the client's BSK public key which, if the client does not gratuitously expose its public key, can be used to obtain a modicum of correctness, that the client is connecting to the correct network (see [duckling]).
+Using the process defined herein, the client proves to the TLS server that it has possession of the private key of its BSK. Provided that the mechanism in which the server obtained the BSK public key is trustworthy, a commensurate amount of authenticity of the resulting connection can be obtained. The server also proves that it knows the client's BSK public key which, if the client does not gratuitously expose its public key, can be used to obtain a modicum of correctness, that the client is connecting to the correct server (see [duckling]).
 
 ## Alignment with Wi-Fi Alliance Device Provisioning Profile
 
@@ -148,7 +150,7 @@ Any bootstrapping method defined for, or used by, [DPP] is compatible with TLS-P
 
 Bootstrapping in TLS 1.3 leverages {{!RFC8773}} Certificate-Based Authentication with an External Pre-Shared Key. The External PSK (EPSK) is derived from the BSK public key as described in {{external-psk-derivation}}, and the EPSK is imported using {{!RFC9258}} Importing External Pre-Shared Keys (PSKs) for TLS 1.3. As the BSK public key is an ASN.1 SEQUENCE SubjectPublicKeyInfo from {{!RFC5480}}, and not a full PKI Certificate, the client must use {{!RFC7250}} Using Raw Public Keys in TLS and DTLS in order to present the BSK as raw public key and use ECDSA as defined in {{!NIST.FIPS.186-5}} for authentication.
 
-The TLS PSK handshake gives the client proof that the server knows the BSK public key. Certificate-based authentication of the client to the server using the BSK gives the server proof that the client knows the BSK private key. This satisfies the proof of ownership requirements outlined in {{introduction}}.
+The TLS PSK handshake gives the client proof that the TLS server knows the BSK public key. Certificate-based authentication of the client to the server using the BSK gives the server proof that the client knows the BSK private key. This satisfies the proof of ownership requirements outlined in {{introduction}}.
 
 ## External PSK Derivation
 
@@ -241,8 +243,8 @@ The handshake is shown in {{arch-one}}.
 Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP Identity request to the newly connected peer. For unprovisioned devices that desire to take advantage of TLS-POK, there is no initial realm in which to construct an NAI (see {{?RFC7542}}). This document uses the NAI mechanisms defined in {{!I-D.ietf-emu-eap-arpa}} and defines the EAP username "tls-pok-dpp" for use with the TEAP realm "teap.eap.arpa". The username "tls-pok-dpp" MUST be included yielding an initial identity of "tls-pok-dpp@teap.eap.arpa". This identifier MUST be included in the EAP Identity response in order to indicate to the Authenticator that TEAP is the desired EAP method. {{!I-D.ietf-emu-eap-arpa}} recommends how the device should behave if the Authenticator does not support TEAP or TLS-POK.
 
 ~~~ aasvg
-   Authenticating Peer     Authenticator
-   -------------------     -------------
+    EAP Peer                EAP Server
+    --------                ----------
                             <- EAP-Request/
                             Identity
 
@@ -271,7 +273,7 @@ The server continues with the TLS handshake and uses the EPSK to prove that it k
 
 Once the TLS handshake completes, the client and server have established mutual trust. The server can then proceed to provision a credential onto the client using, for example, the mechanisms outlined in {{?RFC7170}}.
 
-The client can then use this provisioned credential for subsequent network authentication. The BSK is only used during bootstrap, and is not used for any subsequent network access.
+The client can then use this provisioned credential for subsequent EAP authentication. The BSK is only used during bootstrap, and is not used for any subsequent EAP authentication.
 
 # IANA Considerations
 

@@ -68,7 +68,7 @@ informative:
 
 --- abstract
 
-This document defines a mechanism that enables a bootstrapping device to establish trust and mutually authenticate against a TLS server. Bootstrapping devices have a public private key pair, and this mechanism enables a TLS server to prove to the device that it knows the public key, and the device to prove to the TLS server that it knows the private key. The mechanism leverages existing Device Provisioning Protocol (DPP) and TLS standards and can be used in an Extensible Authentication Protocol (EAP) exchange with an EAP server.
+This document defines a mechanism that enables a bootstrapping device to establish trust and mutually authenticate against a TLS server. Bootstrapping devices have a public/private key pair, and this mechanism enables a TLS server to prove to the device that it knows the public key, and the device to prove to the TLS server that it knows the private key. The mechanism leverages existing Device Provisioning Protocol (DPP) and TLS standards and can be used in an Extensible Authentication Protocol (EAP) exchange with an EAP server.
 
 --- middle
 
@@ -92,7 +92,7 @@ The following terminology is used throughout this document.
 
 - 802.1X: IEEE Port-Based Network Access Control
 
-- BSK: Bootstrap Key which is an elliptic curve public private key pair from a cryptosystem suitable for doing ECDSA
+- BSK: Bootstrap Key which is an elliptic curve public/private key pair from a cryptosystem suitable for doing ECDSA
 
 - DPP: Device Provisioning Protocol [DPP]
 
@@ -134,7 +134,7 @@ If future EAP methods are defined supporting certificate provisioning, then TLS-
 
 The mechanism for device on-boarding defined in this document relies on an elliptic curve (EC) bootstrap key (BSK). This BSK MUST be from a cryptosystem suitable for doing ECDSA. A bootstrapping client device has an associated EC BSK. The BSK may be static and baked into device firmware at manufacturing time, or may be dynamic and generated at on-boarding time by the device. The BSK public key MUST be encoded as the DER representation of an ASN.1 SEQUENCE SubjectPublicKeyInfo from {{!RFC5480}}. The subjectPublicKey MUST be the compressed format of the public key. Note that the BSK public key encoding MUST include the ASN.1 AlgorithmIdentifier in addition to the subjectPublicKey. If the BSK public key can be shared in a trustworthy manner with a TLS server, a form of "entity authentication" (the step from which all subsequent authentication proceeds) can be obtained. 
 
-The exact mechanism by which the TLS server gains knowledge of the BSK public key is out of scope of this specification, but possible mechanisms include scanning a QR code to obtain a base64 encoding of the DER representation of the ASN.1 SubjectPublicKeyInfo or uploading of a Bill of Materials (BOM) which includes this information. More information on QR encoding is given in {{alignment-with-wi-fi-alliance-device-provisioning-profile}}. If the QR code is physically attached to the client device, or the BOM is associated with the device, the assumption is that the BSK public key obtained in this bootstrapping method belongs to the client. In this model, physical possession of the device implies legitimate ownership.
+The exact mechanism by which the TLS server gains knowledge of the BSK public key is out of scope of this specification, but possible mechanisms include scanning a QR code to obtain a base64 encoding of the DER representation of the ASN.1 SubjectPublicKeyInfo or uploading of a Bill of Materials (BOM) which includes this information. More information on QR encoding is given in {{alignment-with-wi-fi-alliance-device-provisioning-profile}}. If the QR code is physically attached to the client device, or the BOM is associated with the device, the assumption is that the BSK public key obtained in this bootstrapping method belongs to the client. In this model, physical possession of the device implies legitimate ownership of the device.
 
 The TLS server may have knowledge of multiple BSK public keys corresponding to multiple devices, and existing TLS mechanisms are leveraged that enable the server to identity a specific bootstrap public key corresponding to a specific device.
 
@@ -148,7 +148,7 @@ Any bootstrapping method defined for, or used by, [DPP] is compatible with TLS-P
 
 # Bootstrapping in TLS 1.3
 
-Bootstrapping in TLS 1.3 leverages {{!RFC8773}} Certificate-Based Authentication with an External Pre-Shared Key. The External PSK (EPSK) is derived from the BSK public key as described in {{external-psk-derivation}}, and the EPSK is imported using {{!RFC9258}} Importing External Pre-Shared Keys (PSKs) for TLS 1.3. As the BSK public key is an ASN.1 SEQUENCE SubjectPublicKeyInfo from {{!RFC5480}}, and not a full PKI Certificate, the client must use {{!RFC7250}} Using Raw Public Keys in TLS and DTLS in order to present the BSK as raw public key and use ECDSA as defined in {{!NIST.FIPS.186-5}} for authentication.
+Bootstrapping in TLS 1.3 leverages {{!RFC8773}} Certificate-Based Authentication with an External Pre-Shared Key. The External PSK (EPSK) is derived from the BSK public key as described in {{external-psk-derivation}}, and the EPSK is imported using {{!RFC9258}} Importing External Pre-Shared Keys (PSKs) for TLS 1.3. As the BSK public key is an ASN.1 SEQUENCE SubjectPublicKeyInfo from {{!RFC5480}}, and not a full PKI Certificate, the client must present the BSK as a raw public key as described in {{!RFC7250}} and use ECDSA as defined in {{!NIST.FIPS.186-5}} for authentication.
 
 The TLS PSK handshake gives the client proof that the TLS server knows the BSK public key. Certificate-based authentication of the client to the server using the BSK gives the server proof that the client knows the BSK private key. This satisfies the proof of ownership requirements outlined in {{introduction}}.
 
@@ -203,13 +203,13 @@ The client includes the "tls_cert_with_extern_psk" extension in the ClientHello,
 
 Upon receipt of the ClientHello, the server looks up the client's EPSK key in its database using the mechanisms documented in {{!RFC9258}}. If no match is found, the server MUST terminate the TLS handshake with an alert. If the server finds the matching BSK public key, it includes the "tls_cert_with_extern_psk" extension in the ServerHello message, and the corresponding EPSK identity in the "pre_shared_key" extension. When these extensions have been successfully negotiated, the TLS 1.3 key schedule MUST include both the EPSK in the Early Secret derivation and an (EC)DHE shared secret value in the Handshake Secret derivation. 
 
-After successful negotiation of these extensions, the full TLS 1.3 handshake is performed with the additional caveat that the server MUST send a CertificateRequest message and client MUST authenticate with a raw public key (its BSK) per {{!RFC7250}}. The BSK is always an elliptic curve key pair, therefore the type of the client's Certificate MUST be ECDSA and MUST contain the client's BSK public key as a DER-encoded ASN.1 subjectPublicKeyInfo SEQUENCE.
+After successful negotiation of these extensions, the full TLS 1.3 handshake is performed with the additional caveat that the server MUST send a CertificateRequest message and the client MUST authenticate with a raw public key (its BSK) per {{!RFC7250}}. The BSK is always an elliptic curve key pair, therefore the type of the client's Certificate MUST be ECDSA and MUST contain the client's BSK public key as a DER-encoded ASN.1 subjectPublicKeyInfo SEQUENCE.
 
-Note that the client MUST NOT share its BSK public key with the server until after the client has completed processing of the ServerHello and verified the TLS key schedule. The PSK proof is completed at this stage, and the server has proven to the client that is knows the BSK public key, and it is therefore safe for the client to send the BSK public key to the server in the Certificate message. If the PSK verification step fails when processing the ServerHello, the client terminates the TLS handshake and the BSK public key MUST NOT be shared with the server.
+Note that the client MUST NOT share its BSK public key with the server until after the client has completed processing of the ServerHello and verified the TLS key schedule. The PSK proof is completed at this stage, and the server has proven to the client that it knows the BSK public key, and it is therefore safe for the client to send the BSK public key to the server in the Certificate message. If the PSK verification step fails when processing the ServerHello, the client terminates the TLS handshake and the BSK public key MUST NOT be shared with the server.
 
 When the server processes the client's Certificate, it MUST ensure that it is identical to the BSK public key that it used to generate the EPSK and ImportedIdentity for this handshake. 
 
-When clients use the [duckling] form of authentication, they MAY forgo the checking of the server's certificate in the CertificateVerify and rely on the integrity of the bootstrapping method employed to distribute its key in order to validate trust in the authenticated TLS connection. 
+When clients are configured to trust the first network which proves possession of their public key (as in [duckling]), they MAY forgo the checking of the server's certificate in the CertificateVerify and rely on the integrity of the bootstrapping method employed to distribute its key in order to validate trust in the authenticated TLS connection. 
 
 The handshake is shown in {{arch-one}}.
 
@@ -267,7 +267,7 @@ Upon "link up", an Authenticator on an 802.1X-protected port will issue an EAP I
                        .
 ~~~
 
-Both client and server have derived the EPSK and associated {{!RFC9258}} ImportedIdentity from the BSK public key as described in {{external-psk-derivation}}. When the client starts the TLS exchange in the EAP transaction, it includes the ImportedIdentity structure in the pre_shared_key extension in the ClientHello. When the server received the ClientHello, it extracts the ImportedIdentity and looks up the EPSK and BSK public key. As previously mentioned in {{bootstrap-key}}, the exact mechanism by which the server has gained knowledge of or been provisioned with the BSK public key is outside the scope of this document.
+Both client and server have derived the EPSK and associated {{!RFC9258}} ImportedIdentity from the BSK public key as described in {{external-psk-derivation}}. When the client starts the TLS exchange in the EAP transaction, it includes the ImportedIdentity structure in the pre_shared_key extension in the ClientHello. When the server receives the ClientHello, it extracts the ImportedIdentity and looks up the EPSK and BSK public key. As previously mentioned in {{bootstrap-key}}, the exact mechanism by which the server has gained knowledge of or been provisioned with the BSK public key is outside the scope of this document.
 
 The server continues with the TLS handshake and uses the EPSK to prove that it knows the BSK public key. When the client replies with its Certificate, CertificateVerify and Finished messages, the server MUST ensure that the public key in the Certificate message matches the BSK public key.
 

@@ -82,7 +82,7 @@ If a device has a public / private keypair, and trust in the integrity of a devi
 
 Device on-boarding protocols such as the Device Provisioning Profile [DPP], also referred to as Wi-Fi Easy Connect, address this use case but they have drawbacks. [DPP] for instance does not support wired network access, and does not specify how the device's DPP keypair can be used in a TLS handshake.  This document describes an an authentication mechanism that a device can use to mutually authenticate against a TLS server, and describes how that authentication protocol can be used in an EAP exchange for [IEEE802.1X] wired network access. This protocol is called TLS Proof of Knowledge or TLS-POK.
 
-This document does not address the problem of Wi-Fi network discovery, where a bootstrapping device detects multiple different Wi-Fi networks and needs a more robust and scalable mechanism than simple round-robin to determine the correct network to attach to. DPP addresses this issue but DPP's discovery will not work on a wired 802.1X ethernet port while TLS-POK will. Therefore, TLS-POK SHOULD NOT be used for bootstrapping against wired networks, and SHOULD be used for bootstrapping against wired networks.
+This document does not address the problem of wireless network discovery, where a bootstrapping device detects multiple different wireless networks and needs a more robust and scalable mechanism than simple round-robin to determine the correct network to attach to. DPP addresses this issue for Wi-Fi but DPP's discovery will not work on a wired 802.1X ethernet port, but TLS-POK will. Therefore, TLS-POK SHOULD NOT be used for bootstrapping against wireless networks, and SHOULD be used for bootstrapping against wired networks.
 
 ## Terminology
 
@@ -143,6 +143,8 @@ Using the process defined herein, the client proves to the TLS server that it ha
 ## Alignment with Wi-Fi Alliance Device Provisioning Profile
 
 The definition of the BSK public key aligns with [DPP]. This, for example, enables the QR code format as defined in [DPP] to be reused for TLS-POK. Therefore, a device that supports both wired LAN and Wi-Fi LAN connections can have a single QR code printed on its label, or dynamically display a single QR code on a display, and the bootstrap key can be used for DPP if the device bootstraps against a Wi-Fi network, or TLS-POK if the device bootstraps against a wired network. Similarly, a common bootstrap public key format could be imported into a BOM into a server that handles devices connecting over both wired and Wi-Fi networks.
+
+[DPP], and therefore TLS-POK, does not support the use of RSA or post-quantum crypto systems due to the size of public key and its unsuitableness to be represented in a QR code. If [DPP] is modified in the future to support post-quantum crypto systems, this memo will be updated to track support. 
 
 Any bootstrapping method defined for, or used by, [DPP] is compatible with TLS-POK.
 
